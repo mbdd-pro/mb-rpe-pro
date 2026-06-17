@@ -1,14 +1,42 @@
 {
   "name": "MB RPE Pro",
   "short_name": "MB RPE",
-  "description": "Control de carga interna, RPE y rendimiento deportivo.",
-  "start_url": "./",
+  "description": "Control de carga deportiva RPE · By Pancko",
+  "start_url": "./?source=pwa",
   "display": "standalone",
-  "background_color": "#171217",
-  "theme_color": "#171217",
-  "orientation": "portrait-primary",
+  "background_color": "#0d0b10",
+  "theme_color": "#0d0b10",
+  "orientation": "portrait",
   "icons": [
-    {"src":"assets/logo/icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"assets/logo/icon-512.png","sizes":"512x512","type":"image/png"}
-  ]
+    {
+      "src": "./assets/logo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/logo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/logo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/logo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "scope": "./",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "id": "/mb-rpe-pro/"
 }
