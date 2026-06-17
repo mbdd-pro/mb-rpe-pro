@@ -9,3 +9,13 @@ function todayISO(){ return new Date().toISOString().slice(0,10); }
 function dateAR(iso){ if(!iso) return ''; const [y,m,d]=String(iso).slice(0,10).split('-'); return `${d}/${m}/${y}`; }
 function loadZone(ua){ ua=Number(ua||0); if(ua>=600) return {label:'Alta', cls:'danger'}; if(ua>=300) return {label:'Moderada', cls:'warn'}; return {label:'Baja', cls:'ok'}; }
 function rpeZone(rpe){ rpe=Number(rpe||0); if(rpe>=8) return {label:'RPE alto', cls:'danger'}; if(rpe>=6) return {label:'Duro', cls:'warn'}; return {label:'Controlado', cls:'ok'}; }
+
+function setPageContent(html){
+  const el = $('#page-content');
+  if(!el) return false;
+  el.innerHTML = html;
+  return true;
+}
+function brandIcon(cls=''){
+  return `<img class="brand-icon ${cls}" src="assets/logo/brand-dark-192.png" alt="MB">`;
+}
