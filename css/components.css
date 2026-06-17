@@ -77,3 +77,10 @@
   margin-bottom:10px;
 }
 .card-head .card-title{ margin:0; }
+
+.login-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.login-option{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:18px;padding:14px 10px;font-weight:800;font-size:15px;}
+.login-option.active{background:var(--accent);color:#171217;border-color:transparent;}
+button:disabled{opacity:.72;cursor:wait;}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.card-head .card-title{margin:0;}
