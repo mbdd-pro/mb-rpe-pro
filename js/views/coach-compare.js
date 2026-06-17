@@ -1,0 +1,8 @@
+Router.register('coach-compare', async()=>{
+ if(!Auth.isLogged()||!Auth.isCoach()) return Router.go('login');
+ $('#app').innerHTML=basePage('coach-compare','Comparación 1 vs 1','Analizá dos jugadores',`<div class="empty">Cargando jugadores...</div>`);
+ const p=await Api.listPlayers();
+ const opts=(p.players||[]).map(x=>`<option value="${esc(x.jugador_id)}">${esc(x.nombre)} ${esc(x.apellido)}</option>`).join('');
+ $('#page-content').innerHTML=`<div class="card"><h3 class="card-title">⚔️ Seleccionar jugadores</h3><div class="grid2"><div class="form-row"><label>Jugador A</label><select id="cmp-a">${opts}</select></div><div class="form-row"><label>Jugador B</label><select id="cmp-b">${opts}</select></div></div><button class="btn" id="cmp-btn">Comparar</button></div><div id="cmp-out"></div>`;
+ $('#cmp-btn').onclick=async()=>{try{const d=await Api.comparePlayers($('#cmp-a').value,$('#cmp-b').value); $('#cmp-out').innerHTML=`<div class="grid2"><div class="card"><h3>${esc(d.a.nombre)} ${esc(d.a.apellido)}</h3><div class="kpi"><div class="val">${fmt(d.a.ua)}</div><div class="lbl">UA 30 días</div></div><p>RPE prom.: <b>${Number(d.a.avg_rpe||0).toFixed(1)}</b></p><p>Sesiones: <b>${d.a.sessions}</b></p></div><div class="card"><h3>${esc(d.b.nombre)} ${esc(d.b.apellido)}</h3><div class="kpi"><div class="val">${fmt(d.b.ua)}</div><div class="lbl">UA 30 días</div></div><p>RPE prom.: <b>${Number(d.b.avg_rpe||0).toFixed(1)}</b></p><p>Sesiones: <b>${d.b.sessions}</b></p></div></div><div class="card"><h3 class="card-title">📊 Comparativa</h3><div class="chart-box"><canvas id="cmp-chart"></canvas></div></div>`; Charts.bar('cmp-chart',[d.a.nombre,d.b.nombre],[d.a.ua,d.b.ua]);}catch(e){toast(e.message)}};
+});
