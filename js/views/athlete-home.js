@@ -11,7 +11,7 @@ Router.register('athlete', async () => {
       <div class="kpi"><div class="val">${fmt(data.month_ua)}</div><div class="lbl">UA mes</div></div>
       <div class="kpi"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
-    <div class="grid2"><button class="btn" id="free-session-btn">Cargar sesión libre</button><button class="btn secondary" onclick="Api.invalidate('athleteHome'); Router.render()">Actualizar</button></div>
+    <div class="grid2"><button class="btn" id="free-session-btn">Cargar sesión libre</button><button class="btn secondary" onclick="syncNow()">Sincronizar</button></div>
     <div class="card"><h3 class="card-title">📝 Sesiones pendientes</h3>
       ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
