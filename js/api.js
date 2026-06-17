@@ -1,19 +1,51 @@
-
 const Api = {
   _cache: new Map(),
   _inflight: new Map(),
   _key(action, params={}){ return action + '::' + JSON.stringify(params || {}); },
-  invalidate(prefix=''){
-    if(!prefix){ this._cache.clear(); return; }
-    [...this._cache.keys()].forEach(k=>{ if(k.startsWith(prefix+'::') || k.startsWith(prefix)) this._cache.delete(k); });
+  _storageKey(key){ return 'mb_rpe_api_cache__' + key; },
+  _readLocal(key, ttl){
+    try{
+      const raw = localStorage.getItem(this._storageKey(key));
+      if(!raw) return null;
+      const hit = JSON.parse(raw);
+      if(!hit || !hit.t) return null;
+      if((Date.now() - hit.t) > ttl) return null;
+      return hit.data;
+    }catch(e){ return null; }
   },
-  async cached(action, params={}, ttl=60000){
+  _writeLocal(key, data){
+    try{ localStorage.setItem(this._storageKey(key), JSON.stringify({t:Date.now(), data})); }catch(e){}
+  },
+  invalidate(prefix=''){
+    if(!prefix){
+      this._cache.clear();
+      try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith('mb_rpe_api_cache__')) localStorage.removeItem(k); }); }catch(e){}
+      return;
+    }
+    [...this._cache.keys()].forEach(k=>{ if(k.startsWith(prefix+'::') || k.startsWith(prefix)) this._cache.delete(k); });
+    try{
+      Object.keys(localStorage).forEach(k=>{
+        if(k.startsWith('mb_rpe_api_cache__' + prefix + '::') || k.startsWith('mb_rpe_api_cache__' + prefix)) localStorage.removeItem(k);
+      });
+    }catch(e){}
+  },
+  async cached(action, params={}, ttl=86400000){
     const key=this._key(action, params);
     const now=Date.now();
-    const hit=this._cache.get(key);
-    if(hit && (now-hit.t) < ttl) return hit.data;
+    const mem=this._cache.get(key);
+    if(mem && (now-mem.t) < ttl) return mem.data;
+    const local=this._readLocal(key, ttl);
+    if(local){
+      this._cache.set(key,{t:now,data:local});
+      return local;
+    }
     if(this._inflight.has(key)) return this._inflight.get(key);
-    const p=this.request(action, params).then(data=>{ this._cache.set(key,{t:Date.now(),data}); this._inflight.delete(key); return data; }).catch(err=>{ this._inflight.delete(key); throw err; });
+    const p=this.request(action, params).then(data=>{
+      this._cache.set(key,{t:Date.now(),data});
+      this._writeLocal(key,data);
+      this._inflight.delete(key);
+      return data;
+    }).catch(err=>{ this._inflight.delete(key); throw err; });
     this._inflight.set(key,p);
     return p;
   },
@@ -42,14 +74,14 @@ const Api = {
   guestLogin(nombre, apellido, device_id){ return this.request('guestLogin',{nombre,apellido,device_id}); },
   async register(data){ const r=await this.request('register', data); this.invalidate(); return r; },
   async createSession(data){ const r=await this.request('createSession', data); this.invalidate(); return r; },
-  listSessions(){ return this.cached('listSessions', {}, 60000); },
-  athleteHome(jugador_id){ return this.cached('athleteHome',{jugador_id}, 45000); },
+  listSessions(){ return this.cached('listSessions', {}, 86400000); },
+  athleteHome(jugador_id){ return this.cached('athleteHome',{jugador_id}, 86400000); },
   async submitReport(data){ const r=await this.request('submitReport', data); this.invalidate(); return r; },
   async submitFreeReport(data){ const r=await this.request('submitFreeReport', data); this.invalidate(); return r; },
-  athleteStats(jugador_id){ return this.cached('athleteStats',{jugador_id}, 60000); },
-  coachDashboard(){ return this.cached('coachDashboard', {}, 45000); },
-  listPlayers(){ return this.cached('listPlayers', {}, 90000); },
-  comparePlayers(a,b){ return this.cached('comparePlayers',{jugador_a:a,jugador_b:b}, 60000); },
-  playerDetail(jugador_id){ return this.cached('playerDetail',{jugador_id}, 60000); },
+  athleteStats(jugador_id){ return this.cached('athleteStats',{jugador_id}, 86400000); },
+  coachDashboard(){ return this.cached('coachDashboard', {}, 86400000); },
+  listPlayers(){ return this.cached('listPlayers', {}, 86400000); },
+  comparePlayers(a,b){ return this.cached('comparePlayers',{jugador_a:a,jugador_b:b}, 86400000); },
+  playerDetail(jugador_id){ return this.cached('playerDetail',{jugador_id}, 86400000); },
   async closeSession(sesion_id){ const r=await this.request('closeSession',{sesion_id}); this.invalidate(); return r; }
 };

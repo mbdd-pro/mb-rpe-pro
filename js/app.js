@@ -1,5 +1,10 @@
 
 function renderVersionChip() { /* versión visible solo en login/pantallas internas */ }
+function syncNow(){
+  Api.invalidate();
+  toast('Sincronizando...');
+  Router.render();
+}
 
 function basePage(active,title,subtitle,content){
   const coach=Auth.isCoach();
