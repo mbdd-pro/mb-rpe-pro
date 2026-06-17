@@ -1,0 +1,11 @@
+const Charts = { instances:{},
+  destroy(id){ if(this.instances[id]){ this.instances[id].destroy(); delete this.instances[id]; } },
+  line(id, labels, values, label='UA'){
+    this.destroy(id); const ctx=document.getElementById(id); if(!ctx) return;
+    this.instances[id]=new Chart(ctx,{type:'line',data:{labels,datasets:[{label,data:values,tension:.35,fill:true,borderWidth:3,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});
+  },
+  bar(id, labels, values, label='UA'){
+    this.destroy(id); const ctx=document.getElementById(id); if(!ctx) return;
+    this.instances[id]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label,data:values,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});
+  }
+};
