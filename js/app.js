@@ -1,13 +1,5 @@
 
-function renderVersionChip() {
-  const old = document.querySelector('.app-version-chip');
-  if (old) old.remove();
-  const chip = document.createElement('div');
-  chip.className = 'app-version-chip';
-  const version = (window.APP_CONFIG && window.APP_CONFIG.VERSION) || 'dev';
-  chip.textContent = `v${version} · By Pancko`;
-  document.body.appendChild(chip);
-}
+function renderVersionChip() { /* versión visible solo en login/pantallas internas */ }
 
 function basePage(active,title,subtitle,content){
   const coach=Auth.isCoach();

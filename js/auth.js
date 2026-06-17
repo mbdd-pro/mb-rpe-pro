@@ -12,6 +12,16 @@ const Auth = {
     ThemeStore.set(res.user.tema || ThemeStore.get());
     return res.user;
   },
+
+  async guestLogin(nombre, apellido){
+    const device_id = Store.get('mb_rpe_device_id') || uid('dev');
+    Store.set('mb_rpe_device_id', device_id);
+    const res = await Api.guestLogin(nombre, apellido, device_id);
+    this.current = res.user;
+    SessionStore.set(res.user);
+    ThemeStore.set(res.user.tema || ThemeStore.get());
+    return res.user;
+  },
   logout(){ this.current=null; SessionStore.clear(); Router.go('login'); },
   setSession(user){ this.current=user; SessionStore.set(user); }
 };
