@@ -4,8 +4,8 @@ Router.register('login', async () => {
   <main class="login-wrap">
     <section class="login-card">
       <div class="login-brand">
-        <div class="brand-mark">B</div>
-        <h1>Matías Burrieza</h1>
+        ${brandIcon('brand-logo-lg')}
+        <h1 class="brand-name">Matías Burrieza</h1>
         <p>Desarrollo Deportivo · RPE Pro</p>
       </div>
       <div class="card">

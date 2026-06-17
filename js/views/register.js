@@ -1,6 +1,6 @@
 Router.register('register', async () => {
   $('#app').innerHTML = `<main class="page">
-    <div class="header"><div class="logo">B</div><div><div class="header-title">Crear cuenta</div><div class="header-sub">Deportista · RPE Pro</div></div></div>
+    <div class="header">${brandIcon('header-logo')}<div><div class="header-title">Crear cuenta</div><div class="header-sub">Deportista · RPE Pro</div></div></div>
     <div class="card">
       <div class="grid2">
         <div class="form-row"><label>Nombre</label><input id="r-nombre"></div>

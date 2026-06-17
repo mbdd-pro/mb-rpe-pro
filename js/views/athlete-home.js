@@ -12,12 +12,12 @@ Router.register('athlete', async () => {
       <div class="kpi"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
     <div class="card"><h3 class="card-title">📝 Sesiones pendientes</h3>
-      ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes.</div>`}
+      ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
     <div class="card"><h3 class="card-title">📌 Últimos reportes</h3>
       ${(data.recent||[]).length ? `<div class="list">${data.recent.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${esc(r.comentario||'')}</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>`).join('')}</div>` : `<div class="empty">Sin reportes todavía.</div>`}
     </div>`;
-  $('#page-content').innerHTML=content;
+  setPageContent(content);
   $$('.open-report').forEach(btn=>btn.onclick=()=>renderReportForm(btn.dataset.id, pending.find(s=>s.sesion_id===btn.dataset.id)));
 });
 function sessionCard(s){return `<div class="item"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min</div></div><button class="btn small open-report" data-id="${esc(s.sesion_id)}">Cargar RPE</button></div>`}
