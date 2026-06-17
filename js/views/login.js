@@ -14,7 +14,7 @@ Router.register('login', async () => {
         <div class="form-row"><label>Contraseña / PIN</label><input id="login-pass" type="password" autocomplete="current-password" placeholder="1234" /></div>
         <button class="btn" id="btn-login">Ingresar</button>
         <button class="btn secondary" style="margin-top:8px" onclick="Router.go('register')">Crear cuenta de deportista</button>
-        <div class="small muted" style="margin-top:12px">Admin inicial: <b>admin</b> / <b>1234</b>. Cambiar después.</div>
+        <div class="small muted" style="margin-top:12px">Admin inicial: <b>admin</b> / <b>1234</b>. Cambiar después.<div class="login-version">v${window.APP_CONFIG.VERSION} · <span class="brand-by-pancko">By Pancko</span></div></div>
       </div>
       <div class="theme-toggle" style="width:max-content;margin:14px auto 0">
         <button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button>
