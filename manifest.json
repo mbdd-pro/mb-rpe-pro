@@ -1,7 +1,7 @@
 {
   "name": "MB RPE Pro",
   "short_name": "MB RPE",
-  "description": "Control de carga deportiva RPE · v1.0.3 · By Pancko",
+  "description": "Control de carga deportiva RPE · v1.0.4 Speed Fix · By Pancko",
   "start_url": "./?source=pwa",
   "display": "standalone",
   "background_color": "#0d0b10",
