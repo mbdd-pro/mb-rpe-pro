@@ -26,54 +26,22 @@ async function renderPlayerDetail(jugador_id, token){
       <div class="kpi"><div class="val">${Number(d.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
   </div>
-
-  <div class="card">
-    <div class="card-head"><h3 class="card-title">Datos</h3><button class="btn small secondary" id="edit-player-btn">Editar</button></div>
-    <div class="data-list">
-      <div><b>Email</b><span>${esc(p.email||'-')}</span></div>
-      <div><b>Fecha nac.</b><span>${esc(p.fecha_nacimiento||'-')}</span></div>
-      <div><b>Altura</b><span>${esc(p.altura||'-')}</span></div>
-      <div><b>Peso</b><span>${esc(p.peso||'-')}</span></div>
-      <div><b>Nota coach</b><span>${esc(p.nota||'-')}</span></div>
-    </div>
-
-    <div id="edit-player-panel" hidden>
-      <div class="grid2">
-        <div class="form-row"><label>Nombre</label><input id="ep-nombre" value="${esc(p.nombre||'')}"></div>
-        <div class="form-row"><label>Apellido</label><input id="ep-apellido" value="${esc(p.apellido||'')}"></div>
-      </div>
+  <div class="card"><h3 class="card-title">Datos editables</h3>
+      <div class="grid2"><div class="form-row"><label>Nombre</label><input id="ep-nombre" value="${esc(p.nombre||'')}"></div><div class="form-row"><label>Apellido</label><input id="ep-apellido" value="${esc(p.apellido||'')}"></div></div>
       <div class="form-row"><label>Email</label><input id="ep-email" value="${esc(p.email||'')}"></div>
-      <div class="grid2">
-        <div class="form-row"><label>Deporte</label><input id="ep-deporte" value="${esc(p.deporte||'')}"></div>
-        <div class="form-row"><label>Categoría</label><input id="ep-categoria" value="${esc(p.categoria||'')}"></div>
-      </div>
-      <div class="grid2">
-        <div class="form-row"><label>Equipo</label><input id="ep-equipo" value="${esc(p.equipo||'')}"></div>
-        <div class="form-row"><label>Posición</label><input id="ep-posicion" value="${esc(p.posicion||'')}"></div>
-      </div>
-      <div class="grid2">
-        <div class="form-row"><label>Fecha nacimiento</label><input id="ep-fecha" value="${esc(p.fecha_nacimiento||'')}" placeholder="YYYY-MM-DD"></div>
-        <div class="form-row"><label>Altura</label><input id="ep-altura" value="${esc(p.altura||'')}"></div>
-      </div>
+      <div class="grid2"><div class="form-row"><label>Deporte</label><input id="ep-deporte" value="${esc(p.deporte||'')}"></div><div class="form-row"><label>Categoría</label><input id="ep-categoria" value="${esc(p.categoria||'')}"></div></div>
+      <div class="grid2"><div class="form-row"><label>Equipo</label><input id="ep-equipo" value="${esc(p.equipo||'')}"></div><div class="form-row"><label>Posición</label><input id="ep-posicion" value="${esc(p.posicion||'')}"></div></div>
+      <div class="grid2"><div class="form-row"><label>Fecha nacimiento</label><input id="ep-fecha" inputmode="numeric" placeholder="dd/mm/aaaa" value="${esc(formatDateInput(p.fecha_nacimiento||''))}"></div><div class="form-row"><label>Altura</label><input id="ep-altura" value="${esc(p.altura||'')}"></div></div>
       <div class="form-row"><label>Peso</label><input id="ep-peso" value="${esc(p.peso||'')}"></div>
       <div class="form-row"><label>Nota coach</label><textarea id="ep-nota">${esc(p.nota||'')}</textarea></div>
       <button class="btn" id="save-player-btn">Guardar datos</button>
-    </div>
   </div>
-
   <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
-
- const editBtn=$('#edit-player-btn');
- if(editBtn) editBtn.onclick=()=>{ const panel=$('#edit-player-panel'); panel.hidden=!panel.hidden; };
+ setupDateMask('#ep-fecha');
  const saveBtn=$('#save-player-btn');
  if(saveBtn) saveBtn.onclick=async()=>{try{
    saveBtn.textContent='Guardando...'; saveBtn.disabled=true;
-   await Api.updatePlayer({jugador_id,
-     nombre:$('#ep-nombre').value, apellido:$('#ep-apellido').value, email:$('#ep-email').value,
-     deporte:$('#ep-deporte').value, categoria:$('#ep-categoria').value, equipo:$('#ep-equipo').value,
-     posicion:$('#ep-posicion').value, fecha_nacimiento:$('#ep-fecha').value, altura:$('#ep-altura').value,
-     peso:$('#ep-peso').value, nota:$('#ep-nota').value});
-   saveBtn.textContent='Guardado ✅'; toast('Jugador actualizado');
-   setTimeout(()=>Router.go('coach-players',{id:jugador_id}),350);
+   await Api.updatePlayer({jugador_id,nombre:$('#ep-nombre').value,apellido:$('#ep-apellido').value,email:$('#ep-email').value,deporte:$('#ep-deporte').value,categoria:$('#ep-categoria').value,equipo:$('#ep-equipo').value,posicion:$('#ep-posicion').value,fecha_nacimiento:parseDateInput($('#ep-fecha').value),altura:$('#ep-altura').value,peso:$('#ep-peso').value,nota:$('#ep-nota').value});
+   saveBtn.textContent='Guardado ✅'; toast('Jugador actualizado'); setTimeout(()=>Router.go('coach-players',{id:jugador_id}),350);
  }catch(e){ toast(e.message); saveBtn.textContent='Guardar datos'; saveBtn.disabled=false; }};
 }
