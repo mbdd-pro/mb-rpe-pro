@@ -1,9 +1,10 @@
-Router.register('athlete', async () => {
+Router.register('athlete', async (params={}, token) => {
   if(!Auth.isLogged()) return Router.go('login');
   const user=Auth.current;
   $('#app').innerHTML = basePage('athlete', 'Inicio deportista', `Hola, ${esc(user.nombre)}`, `
     <div class="grid"><div class="empty">Cargando sesiones...</div></div>`);
   const data = await Api.athleteHome(user.jugador_id);
+  if(Router.isStale(token)) return;
   const pending = data.sessions || [];
   const content = `
     <div class="grid3">
@@ -31,7 +32,9 @@ function renderReportForm(id,s){
     <div class="form-row" style="margin-top:12px"><label>Comentario opcional</label><textarea id="comentario" placeholder="¿Cómo te sentiste?"></textarea></div>
     <button class="btn" id="save-report">Guardar reporte</button><button class="btn secondary" style="margin-top:8px" onclick="Router.go('athlete')">Volver</button></div>`;
   $$('.rpe').forEach(b=>b.onclick=()=>{$$('.rpe').forEach(x=>x.classList.remove('active')); b.classList.add('active'); $('#rpe-selected').value=b.dataset.rpe;});
-  $('#save-report').onclick=async()=>{try{ const rpe=$('#rpe-selected').value; if(!rpe) return toast('Elegí RPE'); await Api.submitReport({sesion_id:id,jugador_id:Auth.current.jugador_id,rpe,comentario:$('#comentario').value}); toast('Reporte guardado'); Router.go('athlete'); }catch(e){toast(e.message)}};
+  $('#save-report').onclick=async()=>{try{ const rpe=$('#rpe-selected').value; if(!rpe) return toast('Elegí RPE'); const btn=$('#save-report'); btn.textContent='Guardando...'; btn.disabled=true;
+    await Api.submitReport({sesion_id:id,jugador_id:Auth.current.jugador_id,rpe,comentario:$('#comentario').value});
+    btn.textContent='Guardado ✅'; toast('Reporte guardado'); setTimeout(()=>Router.go('athlete'),350); }catch(e){toast(e.message)}};
 }
 
 function renderFreeSessionForm(){
@@ -47,8 +50,8 @@ function renderFreeSessionForm(){
   $('#save-free-report').onclick=async()=>{try{
     const rpe=$('#free-rpe').value; if(!rpe) return toast('Elegí RPE');
     const dur=$('#free-duracion').value; if(!dur || Number(dur)<=0) return toast('Duración inválida');
+    const btn=$('#save-free-report'); btn.textContent='Guardando...'; btn.disabled=true;
     await Api.submitFreeReport({jugador_id:Auth.current.jugador_id,fecha:$('#free-fecha').value,titulo:$('#free-titulo').value||'Sesión libre',tipo_sesion:$('#free-tipo').value,duracion_min:dur,rpe,comentario:$('#free-comentario').value,creada_por:Auth.current.usuario_id});
-    toast('Sesión libre guardada');
-    Router.go('athlete');
+    btn.textContent='Guardado ✅'; toast('Sesión libre guardada'); setTimeout(()=>Router.go('athlete'),350);
   }catch(e){toast(e.message)}};
 }
