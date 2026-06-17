@@ -14,6 +14,15 @@ Router.register('login', async () => {
         <div class="form-row"><label>Contraseña / PIN</label><input id="login-pass" type="password" autocomplete="current-password" placeholder="1234" /></div>
         <button class="btn" id="btn-login">Ingresar</button>
         <button class="btn secondary" style="margin-top:8px" onclick="Router.go('register')">Crear cuenta de deportista</button>
+        <button class="btn ghost" id="btn-show-guest" style="margin-top:8px">Ingresar como invitado</button>
+        <div id="guest-panel" class="guest-panel" hidden>
+          <div class="grid2">
+            <div class="form-row"><label>Nombre</label><input id="guest-name" placeholder="Nombre"></div>
+            <div class="form-row"><label>Apellido</label><input id="guest-surname" placeholder="Apellido"></div>
+          </div>
+          <button class="btn secondary" id="btn-guest">Continuar como invitado</button>
+          <p class="small muted">Modo rápido: permite cargar sesiones libres. No reemplaza una cuenta real.</p>
+        </div>
         <div class="small muted" style="margin-top:12px">Admin inicial: <b>admin</b> / <b>1234</b>. Cambiar después.<div class="login-version">v${window.APP_CONFIG.VERSION} · <span class="brand-by-pancko">By Pancko</span></div></div>
       </div>
       <div class="theme-toggle" style="width:max-content;margin:14px auto 0">
@@ -22,6 +31,17 @@ Router.register('login', async () => {
     </section>
   </main>`;
   setupThemeButtons();
+  $('#btn-show-guest').onclick = () => { const p=$('#guest-panel'); p.hidden=!p.hidden; };
+  $('#btn-guest').onclick = async () => {
+    try{
+      const n=$('#guest-name').value.trim(); const a=$('#guest-surname').value.trim();
+      if(!n) return toast('Escribí al menos el nombre');
+      $('#btn-guest').textContent='Ingresando...';
+      const user=await Auth.guestLogin(n,a);
+      toast('Ingresaste como invitado');
+      Router.go('athlete');
+    }catch(e){ toast(e.message); $('#btn-guest').textContent='Continuar como invitado'; }
+  };
   $('#btn-login').onclick = async () => {
     try{
       const u=$('#login-user').value.trim(); const p=$('#login-pass').value.trim();
