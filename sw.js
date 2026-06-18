@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mb-rpe-pro-v1-007';
+const CACHE_NAME = 'mb-rpe-pro-v1-008';
 const APP_SHELL = [
   './','index.html','manifest.json',
   'css/base.css','css/themes.css','css/layout.css','css/components.css',
