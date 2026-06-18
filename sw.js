@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mb-rpe-pro-v1-09-security';
+const CACHE_NAME = 'mb-rpe-pro-v1-09-2-sessionfix';
 
 // App shell: NO incluimos js/config.js para que los cambios de API_URL/version no queden clavados.
 const APP_SHELL = [
