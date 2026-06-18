@@ -95,7 +95,7 @@ input, textarea, select {
   -webkit-user-select: text;
   user-select: text;
 }
-.header-meta{margin-top:4px;font-size:11px;font-weight:800;color:var(--text-muted);letter-spacing:.02em;}
+.header-meta{margin-top:4px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.02em;}
 .header-meta .brand-by-pancko{color:var(--accent);}
 .session-open{cursor:pointer;}
 .session-detail-grid{display:grid;gap:10px;}
@@ -111,4 +111,13 @@ input, textarea, select {
   flex-basis:100%;
   text-align:right;
   margin-top:-2px;
+}
+
+/* v1.0.8.1 header version visible */
+.header-actions .btn.small{white-space:nowrap;}
+@media(max-width:420px){
+  .header{align-items:flex-start;}
+  .header-actions{max-width:170px;}
+  .header-actions .theme-toggle button{padding:6px 8px;font-size:11px;}
+  .header-meta-right{font-size:10px;}
 }

@@ -16,7 +16,7 @@ function basePage(active,title,subtitle,content){
     const out=$('#logout-btn'); if(out) out.onclick=()=>Auth.logout();
     setupThemeButtons();
   },0);
-  return `<main class="page with-nav"><div class="top-hero"><div class="header">${brandIcon('header-logo')}<div><div class="header-title">${esc(title)}</div><div class="header-sub">${esc(subtitle)}</div></div><div class="header-spacer"></div><div class="theme-toggle"><button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button></div><button id="logout-btn" class="btn small secondary">Salir</button></div></div><div id="page-content" class="grid">${content}</div></main><nav class="bottom-nav">${nav.map(n=>`<button class="nav-btn ${active===n[0]?'active':''}" data-to="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('')}</nav>`;
+  return `<main class="page with-nav"><div class="top-hero"><div class="header">${brandIcon('header-logo')}<div><div class="header-title">${esc(title)}</div><div class="header-sub">${esc(subtitle)}</div></div><div class="header-spacer"></div><div class="header-actions"><div class="theme-toggle"><button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button></div><button id="logout-btn" class="btn small secondary">Salir</button><div class="header-meta header-meta-right">v${esc(window.APP_CONFIG.VERSION)} · <span class="brand-by-pancko">${esc(window.APP_CONFIG.BRAND_BY || 'By Pancko')}</span></div></div></div></div><div id="page-content" class="grid">${content}</div></main><nav class="bottom-nav">${nav.map(n=>`<button class="nav-btn ${active===n[0]?'active':''}" data-to="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('')}</nav>`;
 }
 function renderProfile(){
   const u=Auth.current||{};
