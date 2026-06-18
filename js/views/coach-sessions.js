@@ -4,26 +4,140 @@ Router.register('coach-sessions', async(params={}, token)=>{
   $('#app').innerHTML = basePage('coach-sessions','Sesiones',detailId?'Detalle de sesión':'Crear y administrar sesiones',`<div class="empty">Cargando...</div>`);
   if(detailId) return renderSessionDetail(detailId, token);
 
-  setPageContent(`<div class="card"><h3 class="card-title">➕ Nueva sesión</h3>
-    <div class="grid2"><div class="form-row"><label>Fecha</label><input id="s-fecha" type="date" value="${todayISO()}"></div><div class="form-row"><label>Hora</label><input id="s-hora" type="time" value="20:00"></div></div>
-    <div class="form-row"><label>Duración min</label><input id="s-duracion" type="number" value="75"></div>
-    <div class="form-row"><label>Título</label><input id="s-titulo" placeholder="Entrenamiento equipo"></div>
-    <div class="grid2"><div class="form-row"><label>Tipo</label><select id="s-tipo"><option>entrenamiento</option><option>partido</option><option>gimnasio</option><option>recuperacion</option><option>otro</option></select></div><div class="form-row"><label>Deporte</label><input id="s-deporte" placeholder="Básquet"></div></div>
-    <div class="grid2"><div class="form-row"><label>Categoría</label><input id="s-categoria"></div><div class="form-row"><label>Equipo</label><input id="s-equipo"></div></div>
-    <button class="btn" id="create-session">Crear sesión</button></div><div id="sessions-list" class="card"><div class="empty">Cargando...</div></div>`);
+  setPageContent(`
+    <details class="accordion session-create-accordion">
+      <summary>
+        <span>➕ Crear nueva sesión</span>
+        <span class="summary-hint">Tocar para desplegar</span>
+      </summary>
+      <div class="accordion-body">
+        <div class="grid2">
+          <div class="form-row"><label>Fecha</label><input id="s-fecha" type="date" value="${todayISO()}"></div>
+          <div class="form-row"><label>Hora</label><input id="s-hora" type="time" value="20:00"></div>
+        </div>
+        <div class="form-row"><label>Duración min</label><input id="s-duracion" type="number" value="75"></div>
+        <div class="form-row"><label>Título</label><input id="s-titulo" placeholder="Entrenamiento equipo"></div>
+        <div class="grid2">
+          <div class="form-row"><label>Tipo</label><select id="s-tipo"><option>entrenamiento</option><option>partido</option><option>gimnasio</option><option>recuperacion</option><option>otro</option></select></div>
+          <div class="form-row"><label>Deporte</label><input id="s-deporte" placeholder="Básquet"></div>
+        </div>
+        <div class="grid2">
+          <div class="form-row"><label>Categoría</label><input id="s-categoria"></div>
+          <div class="form-row"><label>Equipo</label><input id="s-equipo"></div>
+        </div>
+        <button class="btn" id="create-session">Crear sesión</button>
+      </div>
+    </details>
+
+    <div id="sessions-list" class="sessions-block"><div class="card"><div class="empty">Cargando...</div></div></div>
+  `);
 
   $('#create-session').onclick=async()=>{try{
     const btn=$('#create-session'); btn.textContent='Creando...'; btn.disabled=true;
-    await Api.createSession({fecha:$('#s-fecha').value,hora_inicio:$('#s-hora').value,titulo:$('#s-titulo').value,tipo_sesion:$('#s-tipo').value,duracion_min:$('#s-duracion').value,deporte:$('#s-deporte').value,categoria:$('#s-categoria').value,equipo:$('#s-equipo').value,creada_por:Auth.current.usuario_id});
+    await Api.createSession({
+      fecha:$('#s-fecha').value,
+      hora_inicio:$('#s-hora').value,
+      titulo:$('#s-titulo').value,
+      tipo_sesion:$('#s-tipo').value,
+      duracion_min:$('#s-duracion').value,
+      deporte:$('#s-deporte').value,
+      categoria:$('#s-categoria').value,
+      equipo:$('#s-equipo').value,
+      creada_por:Auth.current.usuario_id
+    });
     toast('Sesión creada'); Router.render();
   }catch(e){toast(e.message); const btn=$('#create-session'); btn.textContent='Crear sesión'; btn.disabled=false;}};
 
   const d=await Api.listSessions();
   if(Router.isStale(token)) return;
-  $('#sessions-list').innerHTML=`<div class="card-head"><h3 class="card-title">📅 Sesiones</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button></div><div class="list">${(d.sessions||[]).map(s=>`<div class="item"><div class="item-main session-open" data-id="${esc(s.sesion_id)}"><div class="item-title">${esc(s.titulo)}${s.jugador_nombre?' · '+esc(s.jugador_nombre):''}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${esc(s.estado)}</div></div><div class="item-actions"><span class="pill ${s.estado==='abierta'?'ok':s.estado==='libre'?'warn':'warn'}">${esc(s.estado)}</span><button class="btn small danger delete-btn session-delete" data-id="${esc(s.sesion_id)}" data-title="${esc(s.titulo)}" title="Borrar">🗑️</button></div></div>`).join('') || '<div class="empty">Sin sesiones.</div>'}</div>`;
+  renderCoachSessionsList(d.sessions||[]);
+});
+
+function renderCoachSessionsList(sessions){
+  const oficiales = sessions.filter(s=>String(s.estado||'').toLowerCase() !== 'libre');
+  const libres = sessions.filter(s=>String(s.estado||'').toLowerCase() === 'libre');
+
+  const groups = groupOfficialByCoach(oficiales);
+  const officialHtml = Object.keys(groups).length
+    ? Object.keys(groups).map((key, idx)=>sessionGroupAccordion(coachGroupLabel(key), groups[key], idx===0)).join('')
+    : '<div class="empty">Sin sesiones creadas por coach.</div>';
+
+  const freeHtml = libres.length
+    ? `<div class="list">${libres.map(sessionCard).join('')}</div>`
+    : '<div class="empty">Sin sesiones libres.</div>';
+
+  $('#sessions-list').innerHTML = `
+    <div class="card-head sessions-main-head">
+      <h3 class="card-title">📅 Sesiones</h3>
+      <button class="btn small secondary" onclick="syncNow()">Sincronizar</button>
+    </div>
+
+    <details class="accordion session-list-accordion" open>
+      <summary>
+        <span>🏀 Sesiones creadas por coach</span>
+        <span class="summary-count">${oficiales.length}</span>
+      </summary>
+      <div class="accordion-body session-section-body">${officialHtml}</div>
+    </details>
+
+    <details class="accordion session-list-accordion">
+      <summary>
+        <span>🟠 Sesiones libres cargadas por deportistas</span>
+        <span class="summary-count">${libres.length}</span>
+      </summary>
+      <div class="accordion-body session-section-body">${freeHtml}</div>
+    </details>
+  `;
+
   $$('.session-open').forEach(el=>el.onclick=()=>Router.go('coach-sessions',{id:el.dataset.id}));
   $$('.session-delete').forEach(btn=>btn.onclick=async(ev)=>{ev.stopPropagation(); await deleteSessionByCoach(btn.dataset.id, btn.dataset.title);});
-});
+}
+
+function groupOfficialByCoach(items){
+  return items.reduce((acc,s)=>{
+    const key = s.creada_por || s.coach_id || 'sin_coach';
+    if(!acc[key]) acc[key]=[];
+    acc[key].push(s);
+    return acc;
+  },{});
+}
+
+function coachGroupLabel(key){
+  if(key === 'sin_coach') return 'Coach sin identificar';
+  if(Auth.current && key === Auth.current.usuario_id) return 'Mis sesiones';
+  return 'Otro coach';
+}
+
+function sessionGroupAccordion(title, items, open){
+  return `<details class="accordion inner-accordion"${open?' open':''}>
+    <summary>
+      <span>${esc(title)}</span>
+      <span class="summary-count">${items.length}</span>
+    </summary>
+    <div class="accordion-body">
+      <div class="list">${items.map(sessionCard).join('')}</div>
+    </div>
+  </details>`;
+}
+
+function sessionCard(s){
+  const estado = String(s.estado||'');
+  const isLibre = estado.toLowerCase()==='libre';
+  const pillCls = estado==='abierta' ? 'ok' : isLibre ? 'warn' : 'warn';
+  const title = s.titulo || (isLibre ? 'Sesión libre' : 'Sesión');
+  const jugador = s.jugador_nombre ? ' · '+esc(s.jugador_nombre) : '';
+  const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${esc(s.duracion_min)} min`, esc(estado)].filter(Boolean).join(' · ');
+  return `<div class="item session-card">
+    <div class="item-main session-open" data-id="${esc(s.sesion_id)}">
+      <div class="item-title">${esc(title)}${jugador}</div>
+      <div class="item-sub">${meta}</div>
+    </div>
+    <div class="item-actions">
+      <span class="pill ${pillCls}">${esc(estado)}</span>
+      <button class="btn small danger delete-btn session-delete" data-id="${esc(s.sesion_id)}" data-title="${esc(title)}" title="Borrar">🗑️</button>
+    </div>
+  </div>`;
+}
 
 async function deleteSessionByCoach(id, title){
   if(!confirm(`¿Borrar definitivamente la sesión "${title||id}"?\nSe elimina de la app, de la Sheet y también sus reportes asociados.`)) return;

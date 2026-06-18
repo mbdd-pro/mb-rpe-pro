@@ -125,3 +125,23 @@ input, textarea, select {
 .btn.danger{background:color-mix(in srgb,var(--danger) 86%,#111);color:#fff;border:1px solid color-mix(in srgb,var(--danger) 70%,transparent)}
 .delete-btn{flex:0 0 auto;min-width:42px;padding-left:10px;padding-right:10px}
 .item-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+
+
+/* v1.0.11 Sesiones UX */
+.accordion{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 28px rgba(0,0,0,.08);overflow:hidden;margin-bottom:14px}
+.accordion>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;font-weight:950}
+.accordion>summary::-webkit-details-marker{display:none}
+.accordion>summary:after{content:'▾';color:var(--muted);font-size:14px;transition:.18s transform}
+.accordion[open]>summary:after{transform:rotate(180deg)}
+.accordion-body{padding:0 16px 16px}
+.summary-hint{font-size:11px;color:var(--muted);font-weight:850}
+.summary-count{min-width:28px;text-align:center;border-radius:999px;padding:4px 9px;background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:950}
+.sessions-main-head{margin:2px 0 12px}
+.sessions-block{display:block}
+.session-list-accordion{margin-bottom:14px}
+.inner-accordion{background:var(--card2);box-shadow:none;border-radius:16px;margin:0 0 10px}
+.inner-accordion>summary{padding:12px 14px}
+.inner-accordion .accordion-body{padding:0 12px 12px}
+.session-section-body{padding-top:0}
+.session-card .item-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.session-create-accordion input,.session-create-accordion select{font-size:16px}
