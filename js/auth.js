@@ -17,6 +17,7 @@ const Auth = {
     Store.set('mb_rpe_device_id', device_id);
     const res = await Api.login(usuario,password,device_id);
     const user = normalizeUser(res.user);
+    if (res.session_token) user.session_token = res.session_token;
     this.current = user;
     SessionStore.set(user);
     ThemeStore.set(user.tema || ThemeStore.get());
@@ -30,6 +31,7 @@ const Auth = {
     Store.set('mb_rpe_device_id', device_id);
     const res = await Api.guestLogin(nombre, apellido, device_id);
     const user = normalizeUser(res.user);
+    if (res.session_token) user.session_token = res.session_token;
     this.current = user;
     SessionStore.set(user);
     ThemeStore.set(user.tema || ThemeStore.get());
