@@ -71,7 +71,7 @@ Router.register('login', async () => {
       btn.textContent='Ingresando...'; btn.disabled=true;
       const user=await Auth.login(u,p);
       toast('Bienvenido/a');
-      Router.go(['admin','coach'].includes(user.rol)?'coach':'athlete');
+      Router.go(['admin','coach'].includes(String(user.rol || '').trim().toLowerCase())?'coach':'athlete');
     }catch(e){ toast(e.message); btn.textContent='Ingresar'; btn.disabled=false; }
   };
 });
