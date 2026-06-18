@@ -37,11 +37,11 @@ async function renderPlayerDetail(jugador_id, token){
       <button class="btn" id="save-player-btn">Guardar datos</button>
   </div>
   <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
- setupDateMask('#ep-fecha');
+ setupDateMask('#ep-fecha'); setupDecimalComma('#ep-altura');
  const saveBtn=$('#save-player-btn');
  if(saveBtn) saveBtn.onclick=async()=>{try{
    saveBtn.textContent='Guardando...'; saveBtn.disabled=true;
-   await Api.updatePlayer({jugador_id,nombre:$('#ep-nombre').value,apellido:$('#ep-apellido').value,email:$('#ep-email').value,deporte:$('#ep-deporte').value,categoria:$('#ep-categoria').value,equipo:$('#ep-equipo').value,posicion:$('#ep-posicion').value,fecha_nacimiento:parseDateInput($('#ep-fecha').value),altura:$('#ep-altura').value,peso:$('#ep-peso').value,nota:$('#ep-nota').value});
+   await Api.updatePlayer({jugador_id,nombre:$('#ep-nombre').value,apellido:$('#ep-apellido').value,email:$('#ep-email').value,deporte:$('#ep-deporte').value,categoria:$('#ep-categoria').value,equipo:$('#ep-equipo').value,posicion:$('#ep-posicion').value,fecha_nacimiento:parseDateInput($('#ep-fecha').value),altura:normalizeDecimal($('#ep-altura').value),peso:$('#ep-peso').value,nota:$('#ep-nota').value});
    saveBtn.textContent='Guardado ✅'; toast('Jugador actualizado'); setTimeout(()=>Router.go('coach-players',{id:jugador_id}),350);
  }catch(e){ toast(e.message); saveBtn.textContent='Guardar datos'; saveBtn.disabled=false; }};
 }

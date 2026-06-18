@@ -1,11 +1,11 @@
 Router.register('athlete', async (params={}, token) => {
   if(!Auth.isLogged()) return Router.go('login');
   const user=Auth.current;
-  $('#app').innerHTML = basePage('athlete', 'Inicio deportista', `Hola, ${esc(user.nombre)}`, `
-    <div class="grid"><div class="empty">Cargando sesiones...</div></div>`);
+  $('#app').innerHTML = basePage('athlete', 'Inicio deportista', `Hola, ${esc(user.nombre)}`, `<div class="grid"><div class="empty">Cargando sesiones...</div></div>`);
   const data = await Api.athleteHome(user.jugador_id);
   if(Router.isStale(token)) return;
   const pending = data.sessions || [];
+  const recent = data.recent || [];
   const content = `
     <div class="grid3">
       <div class="kpi"><div class="val">${fmt(data.week_ua)}</div><div class="lbl">UA semana</div></div>
@@ -17,13 +17,29 @@ Router.register('athlete', async (params={}, token) => {
       ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
     <div class="card"><h3 class="card-title">📌 Últimos reportes</h3>
-      ${(data.recent||[]).length ? `<div class="list">${data.recent.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${esc(r.comentario||'')}</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>`).join('')}</div>` : `<div class="empty">Sin reportes todavía.</div>`}
+      ${recent.length ? `<div class="list">${recent.map(r=>reportCard(r)).join('')}</div>` : `<div class="empty">Sin reportes todavía.</div>`}
     </div>`;
   setPageContent(content);
   const freeBtn = $('#free-session-btn'); if(freeBtn) freeBtn.onclick=()=>renderFreeSessionForm();
   $$('.open-report').forEach(btn=>btn.onclick=()=>renderReportForm(btn.dataset.id, pending.find(s=>s.sesion_id===btn.dataset.id)));
+  $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));
 });
-function sessionCard(s){return `<div class="item"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min</div></div><button class="btn small open-report" data-id="${esc(s.sesion_id)}">Cargar RPE</button></div>`}
+function sessionCard(s){return `<div class="item"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${sourceLabel(s.estado)}</div></div><button class="btn small open-report" data-id="${esc(s.sesion_id)}">Cargar RPE</button></div>`}
+function reportCard(r){return `<div class="item ath-report-open" data-id="${esc(r.reporte_id)}"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} ${timeShort(r.hora_inicio)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}${r.comentario?' · '+esc(r.comentario):''}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`}
+function renderAthleteReportDetail(r){
+  if(!r) return toast('Reporte no encontrado');
+  $('#page-content').innerHTML = `<div class="card">
+    <button class="btn small secondary" onclick="Router.go('athlete')">← Volver</button>
+    <h3 class="card-title">${esc(r.titulo)} · RPE ${esc(r.rpe)}</h3>
+    <div class="session-detail-grid">
+      <div class="item"><div class="item-main"><div class="item-title">Fecha y hora</div><div class="item-sub">${dateAR(r.fecha)} ${timeShort(r.hora_inicio)||''}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Tipo / origen</div><div class="item-sub">${esc(r.tipo_sesion||'-')} · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':'ok'}">${sourceLabel(r.estado)}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Duración</div><div class="item-sub">${esc(r.duracion_min||'-')} min</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">UA</div><div class="item-sub">${fmt(r.ua)} UA</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Comentario</div><div class="item-sub">${esc(r.comentario||'-')}</div></div></div>
+    </div>
+  </div>`;
+}
 function renderReportForm(id,s){
   $('#page-content').innerHTML = `<div class="card"><h3 class="card-title">Cargar RPE · ${esc(s.titulo)}</h3>
     <p class="muted small">Duración definida por coach: <b>${s.duracion_min} min</b></p>
@@ -40,7 +56,8 @@ function renderReportForm(id,s){
 function renderFreeSessionForm(){
   $('#page-content').innerHTML = `<div class="card"><h3 class="card-title">Cargar sesión libre</h3>
     <p class="muted small">Para entrenamientos individuales no creados por el coach. Queda visible para revisión.</p>
-    <div class="grid2"><div class="form-row"><label>Fecha</label><input id="free-fecha" type="date" value="${todayISO()}"></div><div class="form-row"><label>Duración min</label><input id="free-duracion" type="number" value="60"></div></div>
+    <div class="grid2"><div class="form-row"><label>Fecha</label><input id="free-fecha" type="date" value="${todayISO()}"></div><div class="form-row"><label>Hora</label><input id="free-hora" type="time" value=""></div></div>
+    <div class="form-row"><label>Duración min</label><input id="free-duracion" type="number" value="60"></div>
     <div class="grid2"><div class="form-row"><label>Tipo</label><select id="free-tipo"><option>entrenamiento</option><option>partido</option><option>gimnasio</option><option>recuperacion</option><option>otro</option></select></div><div class="form-row"><label>Título</label><input id="free-titulo" placeholder="Entrenamiento individual"></div></div>
     <label>RPE</label><div class="rpe-grid">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="rpe" data-rpe="${n}">${n}<small>${n<=2?'Fácil':n<=4?'Moderado':n<=6?'Duro':n<=8?'Muy duro':'Máx.'}</small></button>`).join('')}</div>
     <input id="free-rpe" type="hidden">
@@ -51,7 +68,7 @@ function renderFreeSessionForm(){
     const rpe=$('#free-rpe').value; if(!rpe) return toast('Elegí RPE');
     const dur=$('#free-duracion').value; if(!dur || Number(dur)<=0) return toast('Duración inválida');
     const btn=$('#save-free-report'); btn.textContent='Guardando...'; btn.disabled=true;
-    await Api.submitFreeReport({jugador_id:Auth.current.jugador_id,fecha:$('#free-fecha').value,titulo:$('#free-titulo').value||'Sesión libre',tipo_sesion:$('#free-tipo').value,duracion_min:dur,rpe,comentario:$('#free-comentario').value,creada_por:Auth.current.usuario_id});
+    await Api.submitFreeReport({jugador_id:Auth.current.jugador_id,fecha:$('#free-fecha').value,hora_inicio:$('#free-hora').value,titulo:$('#free-titulo').value||'Sesión libre',tipo_sesion:$('#free-tipo').value,duracion_min:dur,rpe,comentario:$('#free-comentario').value,creada_por:Auth.current.usuario_id});
     btn.textContent='Guardado ✅'; toast('Sesión libre guardada'); setTimeout(()=>Router.go('athlete'),350);
   }catch(e){toast(e.message)}};
 }

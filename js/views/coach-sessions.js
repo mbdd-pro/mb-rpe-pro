@@ -20,24 +20,29 @@ Router.register('coach-sessions', async(params={}, token)=>{
 
   const d=await Api.listSessions();
   if(Router.isStale(token)) return;
-  $('#sessions-list').innerHTML=`<div class="card-head"><h3 class="card-title">📅 Sesiones</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button></div><div class="list">${(d.sessions||[]).map(s=>`<div class="item session-open" data-id="${esc(s.sesion_id)}"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${esc(s.estado)}</div></div><span class="pill ${s.estado==='abierta'?'ok':s.estado==='libre'?'warn':'warn'}">${esc(s.estado)}</span></div>`).join('') || '<div class="empty">Sin sesiones.</div>'}</div>`;
+  $('#sessions-list').innerHTML=`<div class="card-head"><h3 class="card-title">📅 Sesiones</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button></div><div class="list">${(d.sessions||[]).map(s=>`<div class="item session-open" data-id="${esc(s.sesion_id)}"><div class="item-main"><div class="item-title">${esc(s.titulo)}${s.jugador_nombre?' · '+esc(s.jugador_nombre):''}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${esc(s.estado)}</div></div><span class="pill ${s.estado==='abierta'?'ok':s.estado==='libre'?'warn':'warn'}">${esc(s.estado)}</span></div>`).join('') || '<div class="empty">Sin sesiones.</div>'}</div>`;
   $$('.session-open').forEach(el=>el.onclick=()=>Router.go('coach-sessions',{id:el.dataset.id}));
 });
 
 async function renderSessionDetail(id, token){
-  const d=await Api.listSessions();
+  const d=await Api.sessionDetail(id);
   if(Router.isStale(token)) return;
-  const s=(d.sessions||[]).find(x=>x.sesion_id===id);
-  if(!s) return setPageContent(`<div class="card"><button class="btn secondary" onclick="Router.go('coach-sessions')">← Volver</button><div class="empty">Sesión no encontrada</div></div>`);
+  const s=d.session || {};
+  const reports=d.reports || [];
   setPageContent(`<div class="card">
     <button class="btn small secondary" onclick="Router.go('coach-sessions')">← Volver</button>
     <h3 class="card-title">${esc(s.titulo)}</h3>
     <div class="session-detail-grid">
       <div class="item"><div class="item-main"><div class="item-title">Fecha y hora</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)||''}</div></div></div>
-      <div class="item"><div class="item-main"><div class="item-title">Tipo</div><div class="item-sub">${esc(s.tipo_sesion)} · ${esc(s.deporte||'')}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Tipo</div><div class="item-sub">${esc(s.tipo_sesion)} · ${esc(s.deporte||'-')}</div></div></div>
       <div class="item"><div class="item-main"><div class="item-title">Duración</div><div class="item-sub">${esc(s.duracion_min)} min</div></div></div>
       <div class="item"><div class="item-main"><div class="item-title">Estado</div><div class="item-sub">${esc(s.estado)}</div></div><span class="pill ${s.estado==='libre'?'warn':'ok'}">${esc(s.estado)}</span></div>
-      <div class="item"><div class="item-main"><div class="item-title">Categoría / Equipo</div><div class="item-sub">${esc(s.categoria||'-')} · ${esc(s.equipo||'-')}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Jugador</div><div class="item-sub">${esc(s.jugador_nombre||'-')}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">RPE / UA</div><div class="item-sub">${s.rpe?('RPE '+esc(s.rpe)+' · '+fmt(s.ua)+' UA'):'Sin reporte cargado'}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Comentario</div><div class="item-sub">${esc(s.comentario||'-')}</div></div></div>
     </div>
+  </div>
+  <div class="card"><h3 class="card-title">Reportes de la sesión</h3>
+    ${reports.length ? `<div class="list">${reports.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.nombre)} ${esc(r.apellido)} · RPE ${esc(r.rpe)}</div><div class="item-sub">${fmt(r.ua)} UA · ${esc(r.comentario||'-')}</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>`).join('')}</div>` : '<div class="empty">Sin reportes.</div>'}
   </div>`);
 }
