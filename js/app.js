@@ -16,7 +16,7 @@ function basePage(active,title,subtitle,content){
     const out=$('#logout-btn'); if(out) out.onclick=()=>Auth.logout();
     setupThemeButtons();
   },0);
-  return `<main class="page with-nav"><div class="top-hero"><div class="header">${brandIcon('header-logo')}<div><div class="header-title">${esc(title)}</div><div class="header-sub">${esc(subtitle)}</div><div class="header-meta">v${window.APP_CONFIG.VERSION} · <span class="brand-by-pancko">By Pancko</span></div></div><div class="header-spacer"></div><div class="theme-toggle"><button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button></div><button id="logout-btn" class="btn small secondary">Salir</button></div></div><div id="page-content" class="grid">${content}</div></main><nav class="bottom-nav">${nav.map(n=>`<button class="nav-btn ${active===n[0]?'active':''}" data-to="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('')}</nav>`;
+  return `<main class="page with-nav"><div class="top-hero"><div class="header">${brandIcon('header-logo')}<div><div class="header-title">${esc(title)}</div><div class="header-sub">${esc(subtitle)}</div></div><div class="header-spacer"></div><div class="theme-toggle"><button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button></div><button id="logout-btn" class="btn small secondary">Salir</button></div></div><div id="page-content" class="grid">${content}</div></main><nav class="bottom-nav">${nav.map(n=>`<button class="nav-btn ${active===n[0]?'active':''}" data-to="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('')}</nav>`;
 }
 function renderProfile(){
   const u=Auth.current||{};
@@ -45,13 +45,13 @@ async function renderProfileContent(u, isGuest){
   </div>
   ${isGuest?'':`<div class="card"><h3 class="card-title">Cambiar contraseña</h3><div class="form-row"><label>Nueva contraseña / PIN</label><input id="new-pass" type="password"></div><button class="btn secondary" id="change-pass-btn">Cambiar contraseña</button></div>`}
   <div class="card"><button class="btn secondary" onclick="Auth.logout()">Cerrar sesión</button></div>`);
-  setupDateMask('#pr-fecha');
+  setupDateMask('#pr-fecha'); setupDecimalComma('#pr-altura');
   const sp=$('#save-profile-btn');
   if(sp) sp.onclick=async()=>{try{
     sp.textContent='Guardando...'; sp.disabled=true;
     const payload={usuario_id:u.usuario_id,jugador_id:u.jugador_id,nombre:$('#pr-nombre').value,apellido:$('#pr-apellido').value,email:$('#pr-email').value,
       deporte:$('#pr-deporte').value,categoria:$('#pr-categoria').value,equipo:$('#pr-equipo').value,posicion:$('#pr-posicion').value,
-      fecha_nacimiento:parseDateInput($('#pr-fecha').value),altura:$('#pr-altura').value,peso:$('#pr-peso').value};
+      fecha_nacimiento:parseDateInput($('#pr-fecha').value),altura:normalizeDecimal($('#pr-altura').value),peso:$('#pr-peso').value};
     const res=await Api.updateProfile(payload);
     Auth.setSession({...u,...res.user}); toast('Perfil actualizado'); renderProfile();
   }catch(e){toast(e.message); sp.textContent='Guardar perfil'; sp.disabled=false;}};

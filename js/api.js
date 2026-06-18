@@ -75,6 +75,7 @@ const Api = {
   async register(data){ const r=await this.request('register', data); this.invalidate(); return r; },
   async createSession(data){ const r=await this.request('createSession', data); this.invalidate(); return r; },
   listSessions(){ return this.cached('listSessions', {}, 86400000); },
+  sessionDetail(sesion_id){ return this.cached('sessionDetail',{sesion_id}, 86400000); },
   athleteHome(jugador_id){ return this.cached('athleteHome',{jugador_id}, 86400000); },
   async submitReport(data){ const r=await this.request('submitReport', data); this.invalidate(); return r; },
   async submitFreeReport(data){ const r=await this.request('submitFreeReport', data); this.invalidate(); return r; },

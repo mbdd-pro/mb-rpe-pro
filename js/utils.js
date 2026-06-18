@@ -40,3 +40,34 @@ function setupDateMask(sel){
   el.addEventListener('input', ()=>{ let v=el.value.replace(/\D/g,'').slice(0,8); if(v.length>4) v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4); else if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2); el.value=v; });
 }
 function sourceLabel(status){ return String(status||'').toLowerCase().includes('libre') ? 'Libre' : 'Oficial'; }
+
+// v1.0.7 helpers
+function formatDateInput(v){
+  if(!v) return '';
+  let s=String(v).trim();
+  if(s.includes(' ')) s=s.split(' ')[0];
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)){ const [y,m,d]=s.slice(0,10).split('-'); return `${d}/${m}/${y}`; }
+  if(/^\d{8}$/.test(s)){ return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`; }
+  return s;
+}
+function parseDateInput(v){
+  const s=String(v||'').replace(/\D/g,'');
+  if(s.length===8){ const d=s.slice(0,2), m=s.slice(2,4), y=s.slice(4,8); return `${y}-${m}-${d}`; }
+  return String(v||'').split(' ')[0];
+}
+function setupDateMask(sel){
+  const el=$(sel); if(!el) return;
+  el.addEventListener('input', ()=>{
+    let v=el.value.replace(/\D/g,'').slice(0,8);
+    if(v.length>4) v=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
+    else if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2);
+    el.value=v;
+  });
+}
+function setupDecimalComma(sel){
+  const el=$(sel); if(!el) return;
+  el.value = String(el.value||'').replace('.', ',');
+  el.addEventListener('input', ()=>{ el.value = el.value.replace('.', ','); });
+}
+function normalizeDecimal(v){ return String(v||'').replace('.', ','); }
+function sourceLabel(status){ return String(status||'').toLowerCase().includes('libre') ? 'Libre' : 'Oficial'; }
