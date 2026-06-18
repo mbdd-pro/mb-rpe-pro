@@ -129,7 +129,7 @@ function sessionCard(s){
   const pillCls = estado==='abierta' ? 'ok' : isLibre ? 'warn' : 'warn';
   const title = s.titulo || (isLibre ? 'Sesión libre' : 'Sesión');
   const jugador = s.jugador_nombre ? ' · '+esc(s.jugador_nombre) : '';
-  const creator = !isLibre && (s.creada_por_nombre || s.coach_nombre) ? `Creada por ${esc(s.creada_por_nombre || s.coach_nombre)}` : '';
+  const creator = !isLibre && (s.creada_por_nombre || s.coach_nombre) ? `Coach: <span class="coach-name">${esc(s.creada_por_nombre || s.coach_nombre)}</span>` : '';
   const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${esc(s.duracion_min)} min`, esc(estado), creator].filter(Boolean).join(' · ');
   return `<div class="item session-card">
     <div class="item-main session-open" data-id="${esc(s.sesion_id)}">

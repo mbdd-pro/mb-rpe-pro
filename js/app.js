@@ -10,6 +10,7 @@ function basePage(active,title,subtitle,content){
   const coach=Auth.isCoach();
   const currentName = Auth.current ? `${Auth.current.nombre||''} ${Auth.current.apellido||''}`.trim() : '';
   const headerSubtitle = coach && currentName ? `${subtitle} · ${currentName}` : subtitle;
+  const headerSubHtml = coach && currentName ? `${esc(subtitle)} · <span class="coach-name">${esc(currentName)}</span>` : esc(subtitle);
   const nav = coach ? [
     ['coach','🏠','Panel'],['coach-sessions','📅','Sesiones'],['coach-players','👥','Jugadores'],['coach-compare','⚔️','Comparar']
   ] : [ ['athlete','🏠','Inicio'],['athlete-stats','📊','Stats'],['profile','⚙️','Perfil'],['logout','🚪','Salir'] ];
@@ -18,7 +19,7 @@ function basePage(active,title,subtitle,content){
     const out=$('#logout-btn'); if(out) out.onclick=()=>Auth.logout();
     setupThemeButtons();
   },0);
-  return `<main class="page with-nav"><div class="top-hero"><div class="header">${brandIcon('header-logo')}<div><div class="header-title">${esc(title)}</div><div class="header-sub">${esc(headerSubtitle)}</div></div><div class="header-spacer"></div><div class="header-actions"><div class="theme-toggle"><button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button></div><button id="logout-btn" class="btn small secondary">Salir</button><div class="header-meta header-meta-right">v${esc(window.APP_CONFIG.VERSION)} · <span class="brand-by-pancko">${esc(window.APP_CONFIG.BRAND_BY || 'By Pancko')}</span></div></div></div></div><div id="page-content" class="grid">${content}</div></main><nav class="bottom-nav">${nav.map(n=>`<button class="nav-btn ${active===n[0]?'active':''}" data-to="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('')}</nav>`;
+  return `<main class="page with-nav"><div class="top-hero"><div class="header ${coach?'coach-header':''}">${brandIcon('header-logo')}<div><div class="header-title">${esc(title)}</div><div class="header-sub">${headerSubHtml}</div></div><div class="header-spacer"></div><div class="header-actions"><div class="theme-toggle"><button data-theme-btn="black">Black</button><button data-theme-btn="clean">Clean</button></div><button id="logout-btn" class="btn small secondary">Salir</button><div class="header-meta header-meta-right">v${esc(window.APP_CONFIG.VERSION)} · <span class="brand-by-pancko">${esc(window.APP_CONFIG.BRAND_BY || 'By Pancko')}</span></div></div></div></div><div id="page-content" class="grid">${content}</div></main><nav class="bottom-nav">${nav.map(n=>`<button class="nav-btn ${active===n[0]?'active':''}" data-to="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join('')}</nav>`;
 }
 function renderProfile(){
   const u=Auth.current||{};

@@ -27,7 +27,7 @@ Router.register('athlete', async (params={}, token) => {
 });
 function sessionCard(s){
   const creator = s.creada_por_nombre || s.coach_nombre || '';
-  const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, sourceLabel(s.estado), creator ? `Creada por ${esc(creator)}` : ''].filter(Boolean).join(' · ');
+  const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, sourceLabel(s.estado), creator ? `Coach: <span class="coach-name">${esc(creator)}</span>` : ''].filter(Boolean).join(' · ');
   return `<div class="item pending-session-card"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${meta}</div></div><button class="btn small open-report pending-pulse" data-id="${esc(s.sesion_id)}">Pendiente · cargar RPE</button></div>`
 }
 function isFreeReport(r){ return String(r.estado||'').includes('libre') || String(r.origen||'').toLowerCase()==='libre'; }
