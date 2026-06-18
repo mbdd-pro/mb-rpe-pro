@@ -23,22 +23,35 @@ Router.register('athlete', async (params={}, token) => {
   const freeBtn = $('#free-session-btn'); if(freeBtn) freeBtn.onclick=()=>renderFreeSessionForm();
   $$('.open-report').forEach(btn=>btn.onclick=()=>renderReportForm(btn.dataset.id, pending.find(s=>s.sesion_id===btn.dataset.id)));
   $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));
+  $$('.ath-report-delete').forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await deleteAthleteReport(btn.dataset.id, btn.dataset.free==='1'); });
 });
 function sessionCard(s){return `<div class="item"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${sourceLabel(s.estado)}</div></div><button class="btn small open-report" data-id="${esc(s.sesion_id)}">Cargar RPE</button></div>`}
-function reportCard(r){return `<div class="item ath-report-open" data-id="${esc(r.reporte_id)}"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} ${timeShort(r.hora_inicio)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}${r.comentario?' · '+esc(r.comentario):''}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`}
+function isFreeReport(r){ return String(r.estado||'').includes('libre') || String(r.origen||'').toLowerCase()==='libre'; }
+function reportCard(r){
+  const free = isFreeReport(r);
+  return `<div class="item ath-report-open" data-id="${esc(r.reporte_id)}"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} ${timeShort(r.hora_inicio)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}${r.comentario?' · '+esc(r.comentario):''}</div></div><div class="item-actions"><span class="pill ${free?'warn':loadZone(r.ua).cls}">${free?'Libre':loadZone(r.ua).label}</span>${free?`<button class="btn small danger delete-btn ath-report-delete" data-id="${esc(r.reporte_id)}" data-free="1" title="Borrar">🗑️</button>`:''}</div></div>`
+}
+async function deleteAthleteReport(reporte_id, free){
+  if(!free) return toast('Solo podés borrar sesiones libres. Las oficiales las borra el coach.');
+  if(!confirm('¿Borrar definitivamente esta sesión libre?\nSe elimina de la app y de la Sheet.')) return;
+  try{ await Api.deleteReport(reporte_id); toast('Sesión libre borrada'); Router.render(); }catch(e){ toast(e.message); }
+}
 function renderAthleteReportDetail(r){
   if(!r) return toast('Reporte no encontrado');
+  const free = isFreeReport(r);
   $('#page-content').innerHTML = `<div class="card">
     <button class="btn small secondary" onclick="Router.go('athlete')">← Volver</button>
     <h3 class="card-title">${esc(r.titulo)} · RPE ${esc(r.rpe)}</h3>
     <div class="session-detail-grid">
       <div class="item"><div class="item-main"><div class="item-title">Fecha y hora</div><div class="item-sub">${dateAR(r.fecha)} ${timeShort(r.hora_inicio)||''}</div></div></div>
-      <div class="item"><div class="item-main"><div class="item-title">Tipo / origen</div><div class="item-sub">${esc(r.tipo_sesion||'-')} · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':'ok'}">${sourceLabel(r.estado)}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Tipo / origen</div><div class="item-sub">${esc(r.tipo_sesion||'-')} · ${sourceLabel(r.estado)}</div></div><span class="pill ${free?'warn':'ok'}">${sourceLabel(r.estado)}</span></div>
       <div class="item"><div class="item-main"><div class="item-title">Duración</div><div class="item-sub">${esc(r.duracion_min||'-')} min</div></div></div>
       <div class="item"><div class="item-main"><div class="item-title">UA</div><div class="item-sub">${fmt(r.ua)} UA</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>
       <div class="item"><div class="item-main"><div class="item-title">Comentario</div><div class="item-sub">${esc(r.comentario||'-')}</div></div></div>
     </div>
+    ${free?`<button class="btn danger" id="delete-report-detail" style="margin-top:12px">🗑️ Borrar sesión libre</button>`:`<p class="muted small" style="margin-top:12px">Las sesiones oficiales solo puede borrarlas el coach.</p>`}
   </div>`;
+  const del=$('#delete-report-detail'); if(del) del.onclick=()=>deleteAthleteReport(r.reporte_id, true);
 }
 function renderReportForm(id,s){
   $('#page-content').innerHTML = `<div class="card"><h3 class="card-title">Cargar RPE · ${esc(s.titulo)}</h3>

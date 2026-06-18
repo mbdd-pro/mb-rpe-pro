@@ -100,5 +100,7 @@ const Api = {
   async updatePlayer(data){ const r=await this.request('updatePlayer', data); this.invalidate(); return r; },
   async updateProfile(data){ const r=await this.request('updateProfile', data); this.invalidate(); return r; },
   async changePassword(data){ const r=await this.request('changePassword', data); this.invalidate(); return r; },
-  async closeSession(sesion_id){ const r=await this.request('closeSession',{sesion_id}); this.invalidate(); return r; }
+  async closeSession(sesion_id){ const r=await this.request('closeSession',{sesion_id}); this.invalidate(); return r; },
+  async deleteSession(sesion_id){ const r=await this.request('deleteSession',{sesion_id}); this.invalidate(); return r; },
+  async deleteReport(reporte_id){ const r=await this.request('deleteReport',{reporte_id}); this.invalidate(); return r; }
 };

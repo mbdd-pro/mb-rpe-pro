@@ -20,9 +20,19 @@ Router.register('coach-sessions', async(params={}, token)=>{
 
   const d=await Api.listSessions();
   if(Router.isStale(token)) return;
-  $('#sessions-list').innerHTML=`<div class="card-head"><h3 class="card-title">📅 Sesiones</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button></div><div class="list">${(d.sessions||[]).map(s=>`<div class="item session-open" data-id="${esc(s.sesion_id)}"><div class="item-main"><div class="item-title">${esc(s.titulo)}${s.jugador_nombre?' · '+esc(s.jugador_nombre):''}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${esc(s.estado)}</div></div><span class="pill ${s.estado==='abierta'?'ok':s.estado==='libre'?'warn':'warn'}">${esc(s.estado)}</span></div>`).join('') || '<div class="empty">Sin sesiones.</div>'}</div>`;
+  $('#sessions-list').innerHTML=`<div class="card-head"><h3 class="card-title">📅 Sesiones</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button></div><div class="list">${(d.sessions||[]).map(s=>`<div class="item"><div class="item-main session-open" data-id="${esc(s.sesion_id)}"><div class="item-title">${esc(s.titulo)}${s.jugador_nombre?' · '+esc(s.jugador_nombre):''}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${esc(s.estado)}</div></div><div class="item-actions"><span class="pill ${s.estado==='abierta'?'ok':s.estado==='libre'?'warn':'warn'}">${esc(s.estado)}</span><button class="btn small danger delete-btn session-delete" data-id="${esc(s.sesion_id)}" data-title="${esc(s.titulo)}" title="Borrar">🗑️</button></div></div>`).join('') || '<div class="empty">Sin sesiones.</div>'}</div>`;
   $$('.session-open').forEach(el=>el.onclick=()=>Router.go('coach-sessions',{id:el.dataset.id}));
+  $$('.session-delete').forEach(btn=>btn.onclick=async(ev)=>{ev.stopPropagation(); await deleteSessionByCoach(btn.dataset.id, btn.dataset.title);});
 });
+
+async function deleteSessionByCoach(id, title){
+  if(!confirm(`¿Borrar definitivamente la sesión "${title||id}"?\nSe elimina de la app, de la Sheet y también sus reportes asociados.`)) return;
+  try{ await Api.deleteSession(id); toast('Sesión borrada'); Router.go('coach-sessions'); }catch(e){ toast(e.message); }
+}
+async function deleteReportByCoach(id){
+  if(!confirm('¿Borrar definitivamente este reporte?\nSe elimina de la app y de la Sheet.')) return;
+  try{ await Api.deleteReport(id); toast('Reporte borrado'); Router.render(); }catch(e){ toast(e.message); }
+}
 
 async function renderSessionDetail(id, token){
   const d=await Api.sessionDetail(id);
@@ -30,7 +40,7 @@ async function renderSessionDetail(id, token){
   const s=d.session || {};
   const reports=d.reports || [];
   setPageContent(`<div class="card">
-    <button class="btn small secondary" onclick="Router.go('coach-sessions')">← Volver</button>
+    <div class="grid2"><button class="btn small secondary" onclick="Router.go('coach-sessions')">← Volver</button><button class="btn small danger" id="delete-session-detail">🗑️ Borrar sesión</button></div>
     <h3 class="card-title">${esc(s.titulo)}</h3>
     <div class="session-detail-grid">
       <div class="item"><div class="item-main"><div class="item-title">Fecha y hora</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)||''}</div></div></div>
@@ -43,6 +53,8 @@ async function renderSessionDetail(id, token){
     </div>
   </div>
   <div class="card"><h3 class="card-title">Reportes de la sesión</h3>
-    ${reports.length ? `<div class="list">${reports.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.nombre)} ${esc(r.apellido)} · RPE ${esc(r.rpe)}</div><div class="item-sub">${fmt(r.ua)} UA · ${esc(r.comentario||'-')}</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>`).join('')}</div>` : '<div class="empty">Sin reportes.</div>'}
+    ${reports.length ? `<div class="list">${reports.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.nombre)} ${esc(r.apellido)} · RPE ${esc(r.rpe)}</div><div class="item-sub">${fmt(r.ua)} UA · ${esc(r.comentario||'-')}</div></div><div class="item-actions"><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span><button class="btn small danger delete-btn report-delete" data-id="${esc(r.reporte_id)}" title="Borrar reporte">🗑️</button></div></div>`).join('')}</div>` : '<div class="empty">Sin reportes.</div>'}
   </div>`);
+  const del=$('#delete-session-detail'); if(del) del.onclick=()=>deleteSessionByCoach(s.sesion_id, s.titulo);
+  $$('.report-delete').forEach(btn=>btn.onclick=async(ev)=>{ev.stopPropagation(); await deleteReportByCoach(btn.dataset.id);});
 }
