@@ -145,3 +145,13 @@ input, textarea, select {
 .session-section-body{padding-top:0}
 .session-card .item-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .session-create-accordion input,.session-create-accordion select{font-size:16px}
+
+
+/* v1.0.12 Header + creador de sesión */
+.pending-session-card{border-color:color-mix(in srgb,var(--accent) 26%,var(--line));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 10%,transparent)}
+.pending-pulse{position:relative;overflow:hidden;animation:pendingPulse 1.8s ease-in-out infinite}
+@keyframes pendingPulse{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 34%,transparent)}
+  50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--accent) 0%,transparent)}
+}
+.header-meta-right{white-space:nowrap}

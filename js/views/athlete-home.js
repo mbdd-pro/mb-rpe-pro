@@ -25,7 +25,11 @@ Router.register('athlete', async (params={}, token) => {
   $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));
   $$('.ath-report-delete').forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await deleteAthleteReport(btn.dataset.id, btn.dataset.free==='1'); });
 });
-function sessionCard(s){return `<div class="item"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)} · ${esc(s.tipo_sesion)} · ${s.duracion_min} min · ${sourceLabel(s.estado)}</div></div><button class="btn small open-report" data-id="${esc(s.sesion_id)}">Cargar RPE</button></div>`}
+function sessionCard(s){
+  const creator = s.creada_por_nombre || s.coach_nombre || '';
+  const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, sourceLabel(s.estado), creator ? `Creada por ${esc(creator)}` : ''].filter(Boolean).join(' · ');
+  return `<div class="item pending-session-card"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${meta}</div></div><button class="btn small open-report pending-pulse" data-id="${esc(s.sesion_id)}">Pendiente · cargar RPE</button></div>`
+}
 function isFreeReport(r){ return String(r.estado||'').includes('libre') || String(r.origen||'').toLowerCase()==='libre'; }
 function reportCard(r){
   const free = isFreeReport(r);

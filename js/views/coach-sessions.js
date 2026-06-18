@@ -59,7 +59,7 @@ function renderCoachSessionsList(sessions){
 
   const groups = groupOfficialByCoach(oficiales);
   const officialHtml = Object.keys(groups).length
-    ? Object.keys(groups).map((key, idx)=>sessionGroupAccordion(coachGroupLabel(key), groups[key], idx===0)).join('')
+    ? Object.keys(groups).map((key, idx)=>sessionGroupAccordion(coachGroupLabel(key, groups[key]), groups[key], idx===0)).join('')
     : '<div class="empty">Sin sesiones creadas por coach.</div>';
 
   const freeHtml = libres.length
@@ -102,10 +102,13 @@ function groupOfficialByCoach(items){
   },{});
 }
 
-function coachGroupLabel(key){
+function coachGroupLabel(key, items){
+  const first = (items && items[0]) || {};
+  const name = first.creada_por_nombre || first.coach_nombre || '';
+  if(Auth.current && key === Auth.current.usuario_id) return `Mis sesiones · ${name || ((Auth.current.nombre||'')+' '+(Auth.current.apellido||'')).trim()}`;
+  if(name) return `Creadas por ${name}`;
   if(key === 'sin_coach') return 'Coach sin identificar';
-  if(Auth.current && key === Auth.current.usuario_id) return 'Mis sesiones';
-  return 'Otro coach';
+  return `Creadas por ${key}`;
 }
 
 function sessionGroupAccordion(title, items, open){
@@ -126,7 +129,8 @@ function sessionCard(s){
   const pillCls = estado==='abierta' ? 'ok' : isLibre ? 'warn' : 'warn';
   const title = s.titulo || (isLibre ? 'Sesión libre' : 'Sesión');
   const jugador = s.jugador_nombre ? ' · '+esc(s.jugador_nombre) : '';
-  const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${esc(s.duracion_min)} min`, esc(estado)].filter(Boolean).join(' · ');
+  const creator = !isLibre && (s.creada_por_nombre || s.coach_nombre) ? `Creada por ${esc(s.creada_por_nombre || s.coach_nombre)}` : '';
+  const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${esc(s.duracion_min)} min`, esc(estado), creator].filter(Boolean).join(' · ');
   return `<div class="item session-card">
     <div class="item-main session-open" data-id="${esc(s.sesion_id)}">
       <div class="item-title">${esc(title)}${jugador}</div>
