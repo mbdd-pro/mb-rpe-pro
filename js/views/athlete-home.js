@@ -14,7 +14,7 @@ Router.register('athlete', async (params={}, token) => {
       <div class="kpi"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
 
-    <div class="card pending-first"><h3 class="card-title">📝 Sesiones pendientes del coach</h3>
+    <div class="card pending-first"><h3 class="card-title">📝 Sesiones pendientes del coach</h3><p class="muted chart-note">Tocá la tarjeta o el botón para cargar el RPE pedido por el coach.</p>
       ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
 
@@ -107,11 +107,11 @@ function setupWellnessButtons(wellness){
 function sessionCard(s){
   const creator = s.creada_por_nombre || s.coach_nombre || '';
   const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, creator ? `Coach: <span class="coach-name">${esc(creator)}</span>` : ''].filter(Boolean).join(' · ');
-  return `<div class="item pending-session-card open-report-card" data-id="${esc(s.sesion_id)}">
+  return `<div class="item pending-session-card open-report-card" data-id="${esc(s.sesion_id)}" onclick="openPendingReport(\'${esc(s.sesion_id)}\')">
     <div class="item-main">
       <div class="pending-topline"><div class="item-title">${esc(s.titulo)}</div><span class="pill ok">abierta</span></div>
       <div class="item-sub">${meta}</div>
-      <button type="button" class="btn pending-rpe-btn open-report" data-id="${esc(s.sesion_id)}">Cargar RPE de esta sesión</button>
+      <button type="button" class="btn pending-rpe-btn open-report" data-id="${esc(s.sesion_id)}" onclick="event.stopPropagation();openPendingReport(\'${esc(s.sesion_id)}\')">Cargar RPE de esta sesión</button>
     </div>
   </div>`;
 }
