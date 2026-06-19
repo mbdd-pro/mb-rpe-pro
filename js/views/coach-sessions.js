@@ -143,6 +143,32 @@ function coachSessionCard(s){
   </div>`;
 }
 
+
+function missingPlayerItem(s,p){
+  const name = `${p.nombre||''} ${p.apellido||''}`.trim() || p.jugador_id;
+  return `<div class="item"><div class="item-main"><div class="item-title">${esc(name)}</div><div class="item-sub">${esc(p.equipo||'')} · ${esc(p.categoria||'')} · ${esc(p.posicion||'')}</div></div><button class="btn small coach-fill-missing" data-player="${esc(p.jugador_id)}" data-name="${esc(name)}">Cargar por jugador</button></div>`;
+}
+function renderCoachFillReportForm(s, jugador_id, playerName, backRoute, backParams){
+  $('#page-content').innerHTML = `<div class="card"><button class="btn small secondary" id="coach-fill-back">← Volver</button>
+    <h3 class="card-title">Cargar RPE por jugador</h3>
+    <p class="muted small"><b>${esc(playerName)}</b> · ${esc(s.titulo)} · ${dateAR(s.fecha)} ${timeShort(s.hora_inicio)||''} · ${esc(s.duracion_min)} min</p>
+    <label>RPE</label><div class="rpe-grid">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="rpe" data-rpe="${n}">${n}<small>${n<=2?'Fácil':n<=4?'Moderado':n<=6?'Duro':n<=8?'Muy duro':'Máx.'}</small></button>`).join('')}</div>
+    <input id="coach-rpe-selected" type="hidden">
+    <div class="form-row" style="margin-top:12px"><label>Comentario opcional</label><textarea id="coach-comentario" placeholder="Cargado por el coach"></textarea></div>
+    <button class="btn" id="coach-save-report">Guardar reporte</button>
+  </div>`;
+  const goBack=()=>Router.go(backRoute, backParams||{});
+  $('#coach-fill-back').onclick=goBack;
+  $$('.rpe').forEach(b=>b.onclick=()=>{$$('.rpe').forEach(x=>x.classList.remove('active')); b.classList.add('active'); $('#coach-rpe-selected').value=b.dataset.rpe;});
+  $('#coach-save-report').onclick=async()=>{try{
+    const rpe=$('#coach-rpe-selected').value; if(!rpe) return toast('Elegí RPE');
+    const btn=$('#coach-save-report'); btn.textContent='Guardando...'; btn.disabled=true;
+    await Api.coachSubmitReport({sesion_id:s.sesion_id,jugador_id,rpe,comentario:$('#coach-comentario').value});
+    btn.textContent='Guardado ✅'; toast('Reporte cargado por coach'); setTimeout(goBack,350);
+  }catch(e){toast(e.message); const btn=$('#coach-save-report'); if(btn){btn.textContent='Guardar reporte'; btn.disabled=false;}}};
+}
+
+
 async function deleteSessionByCoach(id, title){
   if(!confirm(`¿Borrar definitivamente la sesión "${title||id}"?\nSe elimina de la app, de la Sheet y también sus reportes asociados.`)) return;
   try{ await Api.deleteSession(id); toast('Sesión borrada'); Router.go('coach-sessions'); }catch(e){ toast(e.message); }
@@ -157,6 +183,7 @@ async function renderSessionDetail(id, token){
   if(Router.isStale(token)) return;
   const s=d.session || {};
   const reports=d.reports || [];
+  const missing=d.missing_players || [];
   setPageContent(`<div class="card">
     <div class="grid2"><button class="btn small secondary" onclick="Router.go('coach-sessions')">← Volver</button><button class="btn small danger" id="delete-session-detail">🗑️ Borrar sesión</button></div>
     <h3 class="card-title">${esc(s.titulo)}</h3>
@@ -172,7 +199,11 @@ async function renderSessionDetail(id, token){
   </div>
   <div class="card"><h3 class="card-title">Reportes de la sesión</h3>
     ${reports.length ? `<div class="list">${reports.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.nombre)} ${esc(r.apellido)} · RPE ${esc(r.rpe)}</div><div class="item-sub">${fmt(r.ua)} UA · ${esc(r.comentario||'-')}</div></div><div class="item-actions"><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span><button class="btn small danger delete-btn report-delete" data-id="${esc(r.reporte_id)}" title="Borrar reporte">🗑️</button></div></div>`).join('')}</div>` : '<div class="empty">Sin reportes.</div>'}
+  </div>
+  <div class="card"><h3 class="card-title">Faltan completar</h3>
+    ${missing.length ? `<div class="list">${missing.map(p=>missingPlayerItem(s,p)).join('')}</div>` : '<div class="empty">Todos los jugadores activos ya completaron esta sesión.</div>'}
   </div>`);
   const del=$('#delete-session-detail'); if(del) del.onclick=()=>deleteSessionByCoach(s.sesion_id, s.titulo);
   $$('.report-delete').forEach(btn=>btn.onclick=async(ev)=>{ev.stopPropagation(); await deleteReportByCoach(btn.dataset.id);});
+  $$('.coach-fill-missing').forEach(btn=>btn.onclick=()=>renderCoachFillReportForm(s, btn.dataset.player, btn.dataset.name, 'coach-sessions', {id:s.sesion_id}));
 }

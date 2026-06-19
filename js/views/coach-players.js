@@ -35,6 +35,31 @@ async function deletePlayerByCoach(id, name){
 
 
 
+
+function renderPlayerPendingSessions(rows, jugador_id, playerName){
+  rows = rows || [];
+  if(!rows.length) return '<div class="empty">Sin sesiones pendientes.</div>';
+  return rows.slice(0,8).map(s=>`<div class="item"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${dateAR(s.fecha)} ${timeShort(s.hora_inicio)||''} · ${esc(s.tipo_sesion||'')} · ${esc(s.duracion_min)} min · Coach: ${esc(s.coach_nombre||s.creada_por_nombre||'')}</div></div><button class="btn small player-fill-session" data-session="${esc(s.sesion_id)}" data-title="${esc(s.titulo)}" data-fecha="${esc(s.fecha)}" data-hora="${esc(s.hora_inicio||'')}" data-duracion="${esc(s.duracion_min)}" data-tipo="${esc(s.tipo_sesion||'')}">Cargar</button></div>`).join('');
+}
+function renderPlayerPendingFillForm(s, jugador_id, playerName){
+  $('#page-content').innerHTML = `<div class="card"><button class="btn small secondary" onclick="Router.go('coach-players',{id:'${esc(jugador_id)}'})">← Volver</button>
+    <h3 class="card-title">Cargar RPE por jugador</h3>
+    <p class="muted small"><b>${esc(playerName)}</b> · ${esc(s.titulo)} · ${dateAR(s.fecha)} ${timeShort(s.hora_inicio)||''} · ${esc(s.duracion_min)} min</p>
+    <label>RPE</label><div class="rpe-grid">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="rpe" data-rpe="${n}">${n}<small>${n<=2?'Fácil':n<=4?'Moderado':n<=6?'Duro':n<=8?'Muy duro':'Máx.'}</small></button>`).join('')}</div>
+    <input id="player-rpe-selected" type="hidden">
+    <div class="form-row" style="margin-top:12px"><label>Comentario opcional</label><textarea id="player-comentario" placeholder="Cargado por el coach"></textarea></div>
+    <button class="btn" id="player-save-report">Guardar reporte</button>
+  </div>`;
+  $$('.rpe').forEach(b=>b.onclick=()=>{$$('.rpe').forEach(x=>x.classList.remove('active')); b.classList.add('active'); $('#player-rpe-selected').value=b.dataset.rpe;});
+  $('#player-save-report').onclick=async()=>{try{
+    const rpe=$('#player-rpe-selected').value; if(!rpe) return toast('Elegí RPE');
+    const btn=$('#player-save-report'); btn.textContent='Guardando...'; btn.disabled=true;
+    await Api.coachSubmitReport({sesion_id:s.sesion_id,jugador_id,rpe,comentario:$('#player-comentario').value});
+    btn.textContent='Guardado ✅'; toast('Reporte cargado por coach'); setTimeout(()=>Router.go('coach-players',{id:jugador_id}),350);
+  }catch(e){toast(e.message); const btn=$('#player-save-report'); if(btn){btn.textContent='Guardar reporte'; btn.disabled=false;}}};
+}
+
+
 function renderPlayerWellnessList(rows){
   rows = rows || [];
   if(!rows.length) return '<div class="empty">Sin registros de bienestar.</div>';
@@ -79,12 +104,16 @@ async function renderPlayerDetail(jugador_id, token){
       <div class="form-row"><label>Nota coach</label><textarea id="ep-nota">${esc(p.nota||'')}</textarea></div>
       <button class="btn" id="save-player-btn">Guardar datos</button>
   </div>
+  <div class="card"><h3 class="card-title">📝 Sesiones pendientes</h3>
+    <div class="list">${renderPlayerPendingSessions(d.pending_sessions||[], jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim())}</div>
+  </div>
   <div class="card"><h3 class="card-title">💤 Bienestar</h3>
     <div class="chart-box"><canvas id="player-wellness-chart"></canvas></div>
     <div class="list wellness-history-list">${renderPlayerWellnessList(d.wellness||[])}</div>
   </div>
   <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
  const wSeries=(d.wellness||[]).slice().reverse(); Charts.line('player-wellness-chart', wSeries.map(x=>dateAR(x.fecha).slice(0,5)), wSeries.map(x=>Number(x.score||0)), 'Bienestar');
+ $$('.player-fill-session').forEach(btn=>btn.onclick=()=>renderPlayerPendingFillForm({sesion_id:btn.dataset.session,titulo:btn.dataset.title,fecha:btn.dataset.fecha,hora_inicio:btn.dataset.hora,duracion_min:btn.dataset.duracion,tipo_sesion:btn.dataset.tipo}, jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim()));
  const delBtn=$('#delete-player-detail'); if(delBtn) delBtn.onclick=()=>deletePlayerByCoach(jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim());
  setupDateMask('#ep-fecha'); setupDecimalComma('#ep-altura');
  const saveBtn=$('#save-player-btn');
