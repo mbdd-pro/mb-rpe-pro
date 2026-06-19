@@ -269,3 +269,13 @@ input, textarea, select {
 .pending-session-card .item-main{width:100%}
 .pending-rpe-btn{margin-top:10px;width:100%;font-size:14px;padding:12px 14px}
 .pending-session-card:active{transform:scale(.995)}
+
+
+/* v1.2.4 prioridad sesión coach */
+.athlete-secondary-actions .btn{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.pending-first{border-color:color-mix(in srgb,var(--accent) 32%,var(--line));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 8%,transparent)}
+.pending-session-card{cursor:pointer;align-items:stretch;border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+.pending-session-card .item-main{width:100%}
+.pending-topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pending-rpe-btn{margin-top:12px;width:100%;font-size:15px;padding:13px 14px;background:var(--accent)!important;color:var(--accentText)!important}
+.pending-session-card:active{transform:scale(.995)}
