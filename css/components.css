@@ -279,3 +279,9 @@ input, textarea, select {
 .pending-topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pending-rpe-btn{margin-top:12px;width:100%;font-size:15px;padding:13px 14px;background:var(--accent)!important;color:var(--accentText)!important}
 .pending-session-card:active{transform:scale(.995)}
+
+
+/* v1.2.5 cache hard / pending usable */
+.pending-first .chart-note{margin:0 0 10px}
+.pending-session-card *{user-select:none}
+.pending-session-card .item-sub{user-select:text}
