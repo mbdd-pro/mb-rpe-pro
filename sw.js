@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mb-rpe-pro-v1-14-security-polish';
+const CACHE_NAME = 'mb-rpe-pro-v1-1-0-graficos';
 
 // App shell: NO incluimos js/config.js para que los cambios de API_URL/version no queden clavados.
 const APP_SHELL = [
@@ -6,7 +6,7 @@ const APP_SHELL = [
   'css/base.css','css/themes.css','css/layout.css','css/components.css',
   'js/utils.js','js/storage.js','js/api.js','js/auth.js','js/charts.js','js/router.js','js/app.js',
   'js/views/login.js','js/views/register.js','js/views/athlete-home.js','js/views/athlete-stats.js',
-  'js/views/coach-dashboard.js','js/views/coach-sessions.js','js/views/coach-players.js','js/views/coach-compare.js',
+  'js/views/coach-dashboard.js','js/views/coach-sessions.js','js/views/coach-players.js','js/views/coach-graphs.js','js/views/coach-compare.js',
   'assets/logo/icon-192.png','assets/logo/icon-512.png','assets/logo/brand-dark-192.png','assets/logo/brand-dark-512.png','assets/logo/brand-clean-192.png','assets/logo/brand-clean-512.png'
 ];
 
@@ -38,7 +38,7 @@ self.addEventListener('fetch', event => {
   // config.js siempre network-first/no-store. Si cambia API_URL o VERSION, Chrome no debe servir una copia vieja.
   if (url.pathname.endsWith('/js/config.js')) {
     event.respondWith(
-      fetch(req, { cache: 'no-store' }).catch(() => new Response("window.APP_CONFIG={APP_NAME:'MB RPE Pro',API_URL:'https://mb-rpe-pro-api.archivosmatiburrieza.workers.dev/',VERSION:'1.0.14',DEFAULT_THEME:'black',BRAND_BY:'By Pancko'};", {
+      fetch(req, { cache: 'no-store' }).catch(() => new Response("window.APP_CONFIG={APP_NAME:'MB RPE Pro',API_URL:'https://mb-rpe-pro-api.archivosmatiburrieza.workers.dev/',VERSION:'1.1.0',DEFAULT_THEME:'black',BRAND_BY:'By Pancko'};", {
         headers: { 'Content-Type': 'application/javascript; charset=utf-8' }
       }))
     );

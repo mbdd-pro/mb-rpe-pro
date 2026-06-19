@@ -161,3 +161,23 @@ input, textarea, select {
 .item-sub .coach-name{white-space:nowrap}
 .pending-session-card .item-sub{line-height:1.25}
 .session-card .item-sub{line-height:1.25}
+
+
+/* v1.1.0 Gráficos */
+.chart-box.tall{height:290px}
+.chart-note{font-size:12px;margin:-4px 0 10px;line-height:1.35}
+.mini-heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.heat-cell{min-height:28px;border-radius:9px;display:grid;place-items:center;font-size:10px;font-weight:850;border:1px solid var(--line);background:var(--card2);color:var(--muted);padding:3px}
+.heat-cell span{font-size:9px}
+.heat-0{opacity:.45}
+.heat-1{background:color-mix(in srgb,var(--ok) 18%,var(--card2));color:var(--text)}
+.heat-2{background:color-mix(in srgb,var(--accent) 24%,var(--card2));color:var(--text)}
+.heat-3{background:color-mix(in srgb,var(--warn) 34%,var(--card2));color:var(--text)}
+.heat-4{background:color-mix(in srgb,var(--danger) 42%,var(--card2));color:var(--text)}
+.team-heatmap-wrap{overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.team-heatmap{display:grid;gap:5px;min-width:620px;align-items:stretch}
+.heat-head{font-size:10px;color:var(--muted);font-weight:900;text-align:center;padding:3px}
+.heat-head:first-child{text-align:left}
+.heat-head.day{writing-mode:vertical-rl;transform:rotate(180deg);height:48px;margin:auto}
+.heat-player{font-size:11px;font-weight:900;display:flex;align-items:center;min-height:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:420px){.bottom-nav{grid-template-columns:repeat(5,1fr);padding-left:4px;padding-right:4px}.nav-btn{font-size:9.5px;padding:7px 2px}.nav-btn span{font-size:18px}.chart-box.tall{height:260px}}
