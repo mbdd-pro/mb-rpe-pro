@@ -20,7 +20,12 @@ function brandIcon(cls=''){
   return `<img class="brand-icon ${cls}" src="assets/logo/brand-dark-192.png" alt="MB">`;
 }
 
-function timeShort(v){ if(!v) return ''; const x=String(v); return x.includes(':') ? x.slice(0,5) : x; }
+function timeShort(v){
+  if(!v) return '';
+  const x=String(v).trim();
+  const m=x.match(/(\d{1,2}:\d{2})/);
+  return m ? m[1].padStart(5,'0') : x;
+}
 function sourceLabel(status){ return String(status||'').toLowerCase().includes('libre') ? 'Libre' : 'Oficial'; }
 
 function formatDateInput(v){
