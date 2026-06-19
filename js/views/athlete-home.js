@@ -2,7 +2,7 @@ Router.register('athlete', async (params={}, token) => {
   if(!Auth.isLogged()) return Router.go('login');
   const user=Auth.current;
   $('#app').innerHTML = basePage('athlete', 'Inicio deportista', `Hola, ${esc(user.nombre)}`, `<div class="grid"><div class="empty">Cargando sesiones...</div></div>`);
-  const data = await Api.athleteHome(user.jugador_id);
+  const [data, wellness] = await Promise.all([Api.athleteHome(user.jugador_id), Api.athleteWellness(user.jugador_id).catch(()=>({}))]);
   if(Router.isStale(token)) return;
   const pending = data.sessions || [];
   const recent = data.recent || [];
@@ -13,6 +13,7 @@ Router.register('athlete', async (params={}, token) => {
       <div class="kpi"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
     <div class="grid2"><button class="btn" id="free-session-btn">Cargar sesión libre</button><button class="btn secondary" onclick="syncNow()">Sincronizar</button></div>
+    <div class="card"><h3 class="card-title">💤 Bienestar de hoy</h3>${wellnessCard(wellness)}</div>
     <div class="card"><h3 class="card-title">📝 Sesiones pendientes</h3>
       ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
@@ -21,10 +22,82 @@ Router.register('athlete', async (params={}, token) => {
     </div>`;
   setPageContent(content);
   const freeBtn = $('#free-session-btn'); if(freeBtn) freeBtn.onclick=()=>renderFreeSessionForm();
+  setupWellnessButtons(wellness);
   $$('.open-report').forEach(btn=>btn.onclick=()=>renderReportForm(btn.dataset.id, pending.find(s=>s.sesion_id===btn.dataset.id)));
   $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));
   $$('.ath-report-delete').forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await deleteAthleteReport(btn.dataset.id, btn.dataset.free==='1'); });
 });
+
+function wellnessCard(w){
+  const today = w && w.today;
+  const score = today ? Number(today.score||0) : 0;
+  const label = wellnessLabel(score);
+  if(today){
+    return `<div class="wellness-summary"><div><div class="wellness-score">${score}</div><div class="muted">Score bienestar</div></div><span class="pill ${label.cls}">${label.txt}</span></div>
+    <div class="wellness-mini">Sueño ${today.sueno} · Fatiga ${today.fatiga} · Dolor ${today.dolor_muscular} · Ánimo/Estrés ${today.estres_animo}${today.molestia==='SI'?' · Molestia':''}</div>
+    <button class="btn secondary" id="wellness-edit-btn" style="margin-top:10px">Editar bienestar</button>
+    <div id="wellness-form-wrap" style="display:none;margin-top:12px">${wellnessForm(today)}</div>`;
+  }
+  return `<p class="muted">Carga rápida: sueño, fatiga, dolor y ánimo/estrés.</p><button class="btn" id="wellness-edit-btn">Cargar bienestar</button><div id="wellness-form-wrap" style="display:none;margin-top:12px">${wellnessForm({})}</div>`;
+}
+function wellnessLabel(score){
+  score=Number(score||0);
+  if(!score) return {txt:'Sin datos',cls:'warn'};
+  if(score>=14) return {txt:'Alerta',cls:'danger'};
+  if(score>=10) return {txt:'Atención',cls:'warn'};
+  return {txt:'Bien',cls:'ok'};
+}
+function wellnessForm(w){
+  return `<div class="grid2">
+    ${wellSelect('sueno','Sueño',w.sueno)}
+    ${wellSelect('fatiga','Fatiga',w.fatiga)}
+    ${wellSelect('dolor_muscular','Dolor muscular',w.dolor_muscular)}
+    ${wellSelect('estres_animo','Ánimo / estrés',w.estres_animo)}
+  </div>
+  <div class="grid2">
+    <div class="form-row"><label>Molestia / lesión</label><select id="well-molestia"><option value="NO">No</option><option value="SI" ${w.molestia==='SI'?'selected':''}>Sí</option></select></div>
+    <div class="form-row"><label>Zona molestia</label><input id="well-zona" value="${esc(w.zona_molestia||'')}" placeholder="rodilla, tobillo..."></div>
+  </div>
+  <div class="form-row"><label>Comentario</label><textarea id="well-comentario" placeholder="Opcional">${esc(w.comentario||'')}</textarea></div>
+  <button class="btn" id="save-wellness-btn">Guardar bienestar</button>`;
+}
+function wellSelect(id,label,val){
+  val=String(val||'');
+  return `<div class="form-row"><label>${label}</label><select id="well-${id}">
+    <option value="">Elegir</option>
+    <option value="1" ${val==='1'?'selected':''}>1 · Muy bien</option>
+    <option value="2" ${val==='2'?'selected':''}>2 · Bien</option>
+    <option value="3" ${val==='3'?'selected':''}>3 · Normal</option>
+    <option value="4" ${val==='4'?'selected':''}>4 · Mal</option>
+    <option value="5" ${val==='5'?'selected':''}>5 · Muy mal</option>
+  </select></div>`;
+}
+function setupWellnessButtons(wellness){
+  const edit=$('#wellness-edit-btn');
+  const wrap=$('#wellness-form-wrap');
+  if(edit && wrap) edit.onclick=()=>{ wrap.style.display = wrap.style.display==='none' ? 'block' : 'none'; };
+  const save=$('#save-wellness-btn');
+  if(save) save.onclick=async()=>{try{
+    const payload={
+      jugador_id:Auth.current.jugador_id,
+      fecha:todayISO(),
+      sueno:$('#well-sueno').value,
+      fatiga:$('#well-fatiga').value,
+      dolor_muscular:$('#well-dolor_muscular').value,
+      estres_animo:$('#well-estres_animo').value,
+      molestia:$('#well-molestia').value,
+      zona_molestia:$('#well-zona').value,
+      comentario:$('#well-comentario').value
+    };
+    if(!payload.sueno||!payload.fatiga||!payload.dolor_muscular||!payload.estres_animo) return toast('Completá los 4 valores');
+    save.textContent='Guardando...'; save.disabled=true;
+    await Api.submitWellness(payload);
+    toast('Bienestar guardado');
+    Router.render();
+  }catch(e){ toast(e.message); save.textContent='Guardar bienestar'; save.disabled=false; }};
+}
+
+
 function sessionCard(s){
   const creator = s.creada_por_nombre || s.coach_nombre || '';
   const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, sourceLabel(s.estado), creator ? `Coach: <span class="coach-name">${esc(creator)}</span>` : ''].filter(Boolean).join(' · ');

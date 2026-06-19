@@ -1,7 +1,7 @@
 Router.register('athlete-stats', async(params={}, token)=>{
   if(!Auth.isLogged()) return Router.go('login');
   $('#app').innerHTML = basePage('athlete-stats','Mis estadísticas',`Hola, ${esc(Auth.current.nombre)}`,`<div class="empty">Cargando gráficos...</div>`);
-  const d=await Api.athleteLoadMetrics(Auth.current.jugador_id);
+  const [d, wellness] = await Promise.all([Api.athleteLoadMetrics(Auth.current.jugador_id), Api.athleteWellness(Auth.current.jugador_id).catch(()=>({series:[]}))]);
   if(Router.isStale(token)) return;
   const allSeries=d.series||[];
   const series=allSeries.slice(-21);
@@ -30,6 +30,8 @@ Router.register('athlete-stats', async(params={}, token)=>{
       ${renderMiniHeatmap(allSeries)}
     </div>
 
+    <div class="card"><h3 class="card-title">💤 Bienestar</h3><div class="chart-box"><canvas id="ath-wellness-chart"></canvas></div></div>
+
     <div class="card">
       <h3 class="card-title">Historial</h3>
       <div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin datos</div>'}</div>
@@ -41,6 +43,7 @@ Router.register('athlete-stats', async(params={}, token)=>{
     {label:'RPE prom.', data:series.map(x=>Number(x.avg_rpe||0)), yAxisID:'y1'}
   ]);
   Charts.bar('ath-ua-chart', labels, series.map(x=>Number(x.ua||0)), 'UA');
+  const wSeries=(wellness.series||[]).slice(-21); Charts.line('ath-wellness-chart', wSeries.map(x=>dateAR(x.fecha).slice(0,5)), wSeries.map(x=>Number(x.score||0)), 'Bienestar');
 });
 
 function renderMiniHeatmap(series){
