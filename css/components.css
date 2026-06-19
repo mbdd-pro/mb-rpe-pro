@@ -181,3 +181,33 @@ input, textarea, select {
 .heat-head.day{writing-mode:vertical-rl;transform:rotate(180deg);height:48px;margin:auto}
 .heat-player{font-size:11px;font-weight:900;display:flex;align-items:center;min-height:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:420px){.bottom-nav{grid-template-columns:repeat(5,1fr);padding-left:4px;padding-right:4px}.nav-btn{font-size:9.5px;padding:7px 2px}.nav-btn span{font-size:18px}.chart-box.tall{height:260px}}
+
+
+/* v1.1.1 Gráficos responsive */
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chart-box{max-width:100%;overflow:hidden}
+.chart-box canvas{max-width:100%}
+.rank-bars{display:grid;gap:10px}
+.rank-row{display:grid;grid-template-columns:minmax(0,1fr) 74px;gap:6px 10px;align-items:center}
+.rank-label{grid-column:1 / -1;display:flex;align-items:center;gap:8px;min-width:0;font-weight:900;font-size:13px}
+.rank-label span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-pos{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);font-size:12px;flex:0 0 auto}
+.rank-track{height:12px;border-radius:999px;background:var(--card2);border:1px solid var(--line);overflow:hidden}
+.rank-fill{height:100%;border-radius:999px;background:var(--accent)}
+.rank-value{font-size:11px;color:var(--muted);font-weight:850;text-align:right;white-space:nowrap}
+.team-heatmap-wrap{max-width:100%;width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.team-heatmap{min-width:560px;max-width:900px}
+.heat-player{max-width:118px}
+.graph-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:grid;align-items:end;padding:12px}
+.graph-modal-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.graph-modal .team-heatmap{min-width:760px}
+@media(max-width:420px){
+  .chart-box{height:210px}
+  .chart-box.tall{height:240px}
+  .team-heatmap{min-width:520px}
+  .heat-cell{min-height:26px;font-size:9px}
+  .heat-head.day{height:42px}
+  .heat-player{font-size:10px;max-width:105px}
+  .graph-modal{padding:8px}
+  .graph-modal-card{border-radius:18px;padding:12px}
+}

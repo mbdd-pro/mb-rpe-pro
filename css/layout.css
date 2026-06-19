@@ -30,3 +30,9 @@
   .theme-toggle button{padding:6px 8px}
   .header-logo{width:40px;height:40px}
 }
+
+
+/* v1.1.1 anti overflow */
+html,body{max-width:100%;overflow-x:hidden}
+.page,.top-hero,#page-content{max-width:100%;overflow-x:hidden}
+.card{max-width:100%;box-sizing:border-box}

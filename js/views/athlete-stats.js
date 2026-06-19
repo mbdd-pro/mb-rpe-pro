@@ -3,7 +3,8 @@ Router.register('athlete-stats', async(params={}, token)=>{
   $('#app').innerHTML = basePage('athlete-stats','Mis estadísticas',`Hola, ${esc(Auth.current.nombre)}`,`<div class="empty">Cargando gráficos...</div>`);
   const d=await Api.athleteLoadMetrics(Auth.current.jugador_id);
   if(Router.isStale(token)) return;
-  const series=d.series||[];
+  const allSeries=d.series||[];
+  const series=allSeries.slice(-21);
   const labels=series.map(x=>dateAR(x.fecha).slice(0,5));
   setPageContent(`
     <div class="grid3">
@@ -26,7 +27,7 @@ Router.register('athlete-stats', async(params={}, token)=>{
     <div class="card">
       <h3 class="card-title">🔥 Mapa mensual</h3>
       <p class="muted chart-note">Más intensidad = más UA cargadas ese día.</p>
-      ${renderMiniHeatmap(series)}
+      ${renderMiniHeatmap(allSeries)}
     </div>
 
     <div class="card">
