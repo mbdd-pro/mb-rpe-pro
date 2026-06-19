@@ -254,3 +254,10 @@ input, textarea, select {
 
 /* v1.2.1 Bienestar en ficha */
 .wellness-history-list{margin-top:12px}
+
+
+/* v1.2.2 Bienestar clickeable */
+.clickable{cursor:pointer}
+.clickable:active{transform:scale(.99)}
+.wellness-open{transition:.15s}
+.wellness-open.clickable{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
