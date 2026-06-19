@@ -297,3 +297,6 @@ input, textarea, select {
   .kpi.compact .val{font-size:24px}
   .kpi.compact .lbl{font-size:9px}
 }
+
+/* v1.2.9 Coach carga faltantes */
+.coach-fill-missing,.player-fill-session{white-space:nowrap}
