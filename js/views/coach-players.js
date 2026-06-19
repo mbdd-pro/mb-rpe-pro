@@ -34,6 +34,24 @@ async function deletePlayerByCoach(id, name){
 }
 
 
+
+function renderPlayerWellnessList(rows){
+  rows = rows || [];
+  if(!rows.length) return '<div class="empty">Sin registros de bienestar.</div>';
+  return rows.slice(0,8).map(w=>{
+    const label = playerWellnessLabel(w);
+    return `<div class="item"><div class="item-main"><div class="item-title">${dateAR(w.fecha)} · Score ${fmt(w.score)}</div><div class="item-sub">Sueño ${w.sueno||'-'} · Fatiga ${w.fatiga||'-'} · Dolor ${w.dolor_muscular||'-'} · Ánimo/Estrés ${w.estres_animo||'-'}${w.molestia==='SI'?' · Molestia: '+esc(w.zona_molestia||'sí'):''}${w.comentario?' · '+esc(w.comentario):''}</div></div><span class="pill ${label.cls}">${label.txt}</span></div>`;
+  }).join('');
+}
+function playerWellnessLabel(w){
+  const score=Number(w.score||0);
+  if(w.molestia==='SI' || score>=14) return {txt:'Alerta',cls:'danger'};
+  if(score>=10) return {txt:'Atención',cls:'warn'};
+  if(score>0) return {txt:'Bien',cls:'ok'};
+  return {txt:'Sin datos',cls:'warn'};
+}
+
+
 async function renderPlayerDetail(jugador_id, token){
  const d = await Api.playerDetail(jugador_id);
  if(Router.isStale(token)) return;
@@ -61,7 +79,12 @@ async function renderPlayerDetail(jugador_id, token){
       <div class="form-row"><label>Nota coach</label><textarea id="ep-nota">${esc(p.nota||'')}</textarea></div>
       <button class="btn" id="save-player-btn">Guardar datos</button>
   </div>
+  <div class="card"><h3 class="card-title">💤 Bienestar</h3>
+    <div class="chart-box"><canvas id="player-wellness-chart"></canvas></div>
+    <div class="list wellness-history-list">${renderPlayerWellnessList(d.wellness||[])}</div>
+  </div>
   <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
+ const wSeries=(d.wellness||[]).slice().reverse(); Charts.line('player-wellness-chart', wSeries.map(x=>dateAR(x.fecha).slice(0,5)), wSeries.map(x=>Number(x.score||0)), 'Bienestar');
  const delBtn=$('#delete-player-detail'); if(delBtn) delBtn.onclick=()=>deletePlayerByCoach(jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim());
  setupDateMask('#ep-fecha'); setupDecimalComma('#ep-altura');
  const saveBtn=$('#save-player-btn');

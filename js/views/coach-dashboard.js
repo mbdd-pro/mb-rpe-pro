@@ -16,9 +16,12 @@ Router.register('coach', async(params={}, token)=>{
 
 function renderCoachWellness(w){
   const players = (w && w.players) || [];
+  const total = Number((w && w.total_players) || players.length || 0);
+  const submitted = Number((w && w.submitted_today) || players.filter(p=>Number(p.score||0)>0).length || 0);
   const flagged = players.filter(p=>Number(p.score||0)>=10 || p.molestia==='SI').slice(0,8);
-  if(!flagged.length) return '<div class="empty">Sin alertas de bienestar hoy.</div>';
-  return flagged.map(p=>{
+  const summary = `<div class="item"><div class="item-main"><div class="item-title">Cargaron hoy: ${fmt(submitted)} / ${fmt(total)}</div><div class="item-sub">Solo aparecen alertas si el score es alto o hay molestia.</div></div><span class="pill ${submitted? 'ok':'warn'}">${submitted? 'Con datos':'Sin cargas'}</span></div>`;
+  if(!flagged.length) return summary + '<div class="empty">Sin alertas de bienestar hoy.</div>';
+  return summary + flagged.map(p=>{
     const label = wellnessCoachLabel(p);
     return `<div class="item"><div class="item-main"><div class="item-title">${esc(p.nombre)} ${esc(p.apellido)}</div><div class="item-sub">Score ${fmt(p.score)} · Sueño ${p.sueno||'-'} · Fatiga ${p.fatiga||'-'} · Dolor ${p.dolor_muscular||'-'} · Ánimo/Estrés ${p.estres_animo||'-'}${p.molestia==='SI'?' · Molestia: '+esc(p.zona_molestia||'sí'):''}</div></div><span class="pill ${label.cls}">${label.txt}</span></div>`;
   }).join('');

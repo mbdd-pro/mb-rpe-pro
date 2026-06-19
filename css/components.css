@@ -250,3 +250,7 @@ input, textarea, select {
 .wellness-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:16px;background:var(--card2);border:1px solid var(--line)}
 .wellness-score{font-size:30px;font-weight:950;line-height:1}
 .wellness-mini{font-size:12px;color:var(--muted);line-height:1.35;margin-top:10px}
+
+
+/* v1.2.1 Bienestar en ficha */
+.wellness-history-list{margin-top:12px}
