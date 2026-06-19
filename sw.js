@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mb-rpe-pro-v1-2-4-pending-cta';
+const CACHE_NAME = 'mb-rpe-pro-v1-2-5-cachehard-pending';
 
 // App shell: NO incluimos js/config.js para que los cambios de API_URL/version no queden clavados.
 const APP_SHELL = [
@@ -38,7 +38,7 @@ self.addEventListener('fetch', event => {
   // config.js siempre network-first/no-store. Si cambia API_URL o VERSION, Chrome no debe servir una copia vieja.
   if (url.pathname.endsWith('/js/config.js')) {
     event.respondWith(
-      fetch(req, { cache: 'no-store' }).catch(() => new Response("window.APP_CONFIG={APP_NAME:'MB RPE Pro',API_URL:'https://mb-rpe-pro-api.archivosmatiburrieza.workers.dev/',VERSION:'1.2.4',DEFAULT_THEME:'black',BRAND_BY:'By Pancko'};", {
+      fetch(req, { cache: 'no-store' }).catch(() => new Response("window.APP_CONFIG={APP_NAME:'MB RPE Pro',API_URL:'https://mb-rpe-pro-api.archivosmatiburrieza.workers.dev/',VERSION:'1.2.5',DEFAULT_THEME:'black',BRAND_BY:'By Pancko'};", {
         headers: { 'Content-Type': 'application/javascript; charset=utf-8' }
       }))
     );
@@ -55,6 +55,20 @@ self.addEventListener('fetch', event => {
           return res;
         })
         .catch(() => caches.match(req).then(res => res || caches.match('./')))
+    );
+    return;
+  }
+
+  // v1.2.5: JS/CSS network-first para evitar que quede lógica vieja con versión nueva.
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+    event.respondWith(
+      fetch(req, { cache: 'no-store' })
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match(req))
     );
     return;
   }
