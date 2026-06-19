@@ -15,7 +15,7 @@ Router.register('athlete', async (params={}, token) => {
     </div>
 
     <div class="card pending-first"><h3 class="card-title">📝 Sesiones pendientes del coach</h3><p class="muted chart-note">Tocá la tarjeta o el botón para cargar el RPE pedido por el coach.</p>
-      ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
+      ${pending.length ? `<div class="list">${pending.map(s=>athletePendingSessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
 
     <div class="card"><h3 class="card-title">💤 Bienestar de hoy</h3>${wellnessCard(wellness)}</div>
@@ -104,7 +104,7 @@ function setupWellnessButtons(wellness){
 }
 
 
-function sessionCard(s){
+function athletePendingSessionCard(s){
   const creator = s.creada_por_nombre || s.coach_nombre || '';
   const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, creator ? `Coach: <span class="coach-name">${esc(creator)}</span>` : ''].filter(Boolean).join(' · ');
   return `<div class="item pending-session-card open-report-card" data-id="${esc(s.sesion_id)}" onclick="openPendingReport(\'${esc(s.sesion_id)}\')">

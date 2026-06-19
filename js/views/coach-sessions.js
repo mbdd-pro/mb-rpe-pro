@@ -63,7 +63,7 @@ function renderCoachSessionsList(sessions){
     : '<div class="empty">Sin sesiones creadas por coach.</div>';
 
   const freeHtml = libres.length
-    ? `<div class="list">${libres.map(sessionCard).join('')}</div>`
+    ? `<div class="list">${libres.map(coachSessionCard).join('')}</div>`
     : '<div class="empty">Sin sesiones libres.</div>';
 
   $('#sessions-list').innerHTML = `
@@ -118,12 +118,12 @@ function sessionGroupAccordion(title, items, open){
       <span class="summary-count">${items.length}</span>
     </summary>
     <div class="accordion-body">
-      <div class="list">${items.map(sessionCard).join('')}</div>
+      <div class="list">${items.map(coachSessionCard).join('')}</div>
     </div>
   </details>`;
 }
 
-function sessionCard(s){
+function coachSessionCard(s){
   const estado = String(s.estado||'');
   const isLibre = estado.toLowerCase()==='libre';
   const pillCls = estado==='abierta' ? 'ok' : isLibre ? 'warn' : 'warn';
