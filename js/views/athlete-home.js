@@ -8,19 +8,13 @@ Router.register('athlete', async (params={}, token) => {
   const recent = data.recent || [];
   window.__athletePendingSessions = pending;
   const content = `
-    <div class="grid3">
-      <div class="kpi"><div class="val">${fmt(data.week_ua)}</div><div class="lbl">UA semana</div></div>
-      <div class="kpi"><div class="val">${fmt(data.month_ua)}</div><div class="lbl">UA mes</div></div>
-      <div class="kpi"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
-    </div>
-
-    <div class="card pending-first"><h3 class="card-title">📝 Sesiones pendientes del coach</h3><p class="muted chart-note">Tocá la tarjeta o el botón para cargar el RPE pedido por el coach.</p>
-      ${pending.length ? `<div class="list">${pending.map(s=>athletePendingSessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
+    <div class="athlete-kpi-row">
+      <div class="kpi compact"><div class="val">${fmt(data.week_ua)}</div><div class="lbl">UA semana</div></div>
+      <div class="kpi compact"><div class="val">${fmt(data.month_ua)}</div><div class="lbl">UA mes</div></div>
+      <div class="kpi compact"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
 
     <div class="card"><h3 class="card-title">💤 Bienestar de hoy</h3>${wellnessCard(wellness)}</div>
-
-    <div class="grid2 athlete-secondary-actions"><button class="btn secondary" id="free-session-btn">Cargar sesión libre</button><button class="btn secondary" onclick="syncNow()">Sincronizar</button></div>
 
     <div class="card"><h3 class="card-title">📌 Últimos reportes</h3>
       ${recent.length ? `<div class="list">${recent.map(r=>reportCard(r)).join('')}</div>` : `<div class="empty">Sin reportes todavía.</div>`}
@@ -28,6 +22,31 @@ Router.register('athlete', async (params={}, token) => {
   setPageContent(content);
   const freeBtn = $('#free-session-btn'); if(freeBtn) freeBtn.onclick=()=>renderFreeSessionForm();
   setupWellnessButtons(wellness);
+  $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));
+  $$('.ath-report-delete').forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await deleteAthleteReport(btn.dataset.id, btn.dataset.free==='1'); });
+});
+
+
+Router.register('athlete-sessions', async (params={}, token) => {
+  if(!Auth.isLogged()) return Router.go('login');
+  const user=Auth.current;
+  $('#app').innerHTML = basePage('athlete-sessions', 'Sesiones', `Hola, ${esc(user.nombre)}`, `<div class="grid"><div class="empty">Cargando sesiones...</div></div>`);
+  const data = await Api.athleteHome(user.jugador_id);
+  if(Router.isStale(token)) return;
+  const pending = data.sessions || [];
+  const recent = data.recent || [];
+  window.__athletePendingSessions = pending;
+  setPageContent(`
+    <div class="card pending-first"><h3 class="card-title">📝 Sesiones pendientes del coach</h3><p class="muted chart-note">Tocá la tarjeta o el botón para cargar el RPE pedido por el coach.</p>
+      ${pending.length ? `<div class="list">${pending.map(s=>athletePendingSessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
+    </div>
+
+    <div class="grid2 athlete-secondary-actions"><button class="btn secondary" id="free-session-btn">Cargar sesión libre</button><button class="btn secondary" onclick="syncNow()">Sincronizar</button></div>
+
+    <div class="card"><h3 class="card-title">📌 Últimos reportes</h3>
+      ${recent.length ? `<div class="list">${recent.map(r=>reportCard(r)).join('')}</div>` : `<div class="empty">Sin reportes todavía.</div>`}
+    </div>`);
+  const freeBtn = $('#free-session-btn'); if(freeBtn) freeBtn.onclick=()=>renderFreeSessionForm();
   $$('.open-report-card').forEach(card=>card.onclick=()=>openPendingReport(card.dataset.id));
   $$('.open-report').forEach(btn=>btn.onclick=(ev)=>{ev.stopPropagation(); openPendingReport(btn.dataset.id);});
   $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));

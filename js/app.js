@@ -13,7 +13,7 @@ function basePage(active,title,subtitle,content){
   const headerSubHtml = coach && currentName ? `${esc(subtitle)} · <span class="coach-name">${esc(currentName)}</span>` : esc(subtitle);
   const nav = coach ? [
     ['coach','🏠','Panel'],['coach-sessions','📅','Sesiones'],['coach-players','👥','Jugadores'],['coach-graphs','📊','Gráficos'],['coach-compare','⚔️','Comparar']
-  ] : [ ['athlete','🏠','Inicio'],['athlete-stats','📊','Stats'],['profile','⚙️','Perfil'],['logout','🚪','Salir'] ];
+  ] : [ ['athlete','🏠','Inicio'],['athlete-sessions','📝','Sesiones'],['athlete-stats','📊','Stats'],['profile','⚙️','Perfil'] ];
   setTimeout(()=>{
     $$('.nav-btn').forEach(b=>b.onclick=()=>{ const to=b.dataset.to; if(to==='logout') return Auth.logout(); if(to==='profile') return Router.go('profile'); Router.go(to); });
     const out=$('#logout-btn'); if(out) out.onclick=()=>Auth.logout();
