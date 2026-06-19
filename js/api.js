@@ -100,6 +100,7 @@ const Api = {
   comparePlayers(a,b){ return this.cached('comparePlayers',{jugador_a:a,jugador_b:b}, 86400000); },
   playerDetail(jugador_id){ return this.cached('playerDetail',{jugador_id}, 86400000); },
   async updatePlayer(data){ const r=await this.request('updatePlayer', data); this.invalidate(); return r; },
+  async deletePlayer(jugador_id){ const r=await this.request('deletePlayer', {jugador_id}); this.invalidate(); return r; },
   async updateProfile(data){ const r=await this.request('updateProfile', data); this.invalidate(); return r; },
   async changePassword(data){ const r=await this.request('changePassword', data); this.invalidate(); return r; },
   async closeSession(sesion_id){ const r=await this.request('closeSession',{sesion_id}); this.invalidate(); return r; },

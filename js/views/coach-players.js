@@ -5,9 +5,34 @@ Router.register('coach-players', async(params={}, token)=>{
  if(detailId) return renderPlayerDetail(detailId, token);
  const d=await Api.listPlayers();
  if(Router.isStale(token)) return;
- setPageContent(`<div class="card"><h3 class="card-title">👥 Jugadores</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button><div class="list" style="margin-top:10px">${(d.players||[]).map(p=>`<div class="item player-open" data-id="${esc(p.jugador_id)}"><div class="avatar">${initials(p.nombre,p.apellido)}</div><div class="item-main"><div class="item-title">${esc(p.nombre)} ${esc(p.apellido)}</div><div class="item-sub">${esc(p.deporte||'')} · ${esc(p.categoria||'')} · ${esc(p.equipo||'')} · ${esc(p.posicion||'')}</div></div><span class="pill ${p.activo==='SI'?'ok':'warn'}">${esc(p.activo)}</span></div>`).join('') || '<div class="empty">Sin jugadores.</div>'}</div></div>`);
+ setPageContent(`<div class="card">
+   <div class="card-head"><h3 class="card-title">👥 Jugadores</h3><button class="btn small secondary" onclick="syncNow()">Sincronizar</button></div>
+   <div class="list" style="margin-top:10px">${(d.players||[]).map(p=>playerListItem(p)).join('') || '<div class="empty">Sin jugadores.</div>'}</div>
+ </div>`);
  $$('.player-open').forEach(el=>el.onclick=()=>Router.go('coach-players',{id:el.dataset.id}));
+ $$('.player-delete').forEach(btn=>btn.onclick=async(ev)=>{ev.stopPropagation(); await deletePlayerByCoach(btn.dataset.id, btn.dataset.name);});
 });
+
+function playerListItem(p){
+  const name = `${p.nombre||''} ${p.apellido||''}`.trim();
+  return `<div class="item player-row">
+    <div class="avatar player-open" data-id="${esc(p.jugador_id)}">${initials(p.nombre,p.apellido)}</div>
+    <div class="item-main player-open" data-id="${esc(p.jugador_id)}">
+      <div class="item-title">${esc(p.nombre)} ${esc(p.apellido)}</div>
+      <div class="item-sub">${esc(p.deporte||'')} · ${esc(p.categoria||'')} · ${esc(p.equipo||'')} · ${esc(p.posicion||'')}</div>
+    </div>
+    <div class="item-actions">
+      <span class="pill ${p.activo==='SI'?'ok':'warn'}">${esc(p.activo)}</span>
+      <button class="btn small danger delete-btn player-delete" data-id="${esc(p.jugador_id)}" data-name="${esc(name)}" title="Eliminar jugador">🗑️</button>
+    </div>
+  </div>`;
+}
+
+async function deletePlayerByCoach(id, name){
+  if(!confirm(`¿Eliminar/desactivar al jugador "${name||id}"?\nNo se borra el historial de reportes; queda inactivo y desaparece del plantel.`)) return;
+  try{ await Api.deletePlayer(id); toast('Jugador desactivado'); Router.go('coach-players'); }catch(e){ toast(e.message); }
+}
+
 
 async function renderPlayerDetail(jugador_id, token){
  const d = await Api.playerDetail(jugador_id);
@@ -15,7 +40,7 @@ async function renderPlayerDetail(jugador_id, token){
  const p = d.player || {};
  setPageContent(`
   <div class="card">
-    <button class="btn small secondary" onclick="Router.go('coach-players')">← Volver</button>
+    <div class="grid2"><button class="btn small secondary" onclick="Router.go('coach-players')">← Volver</button><button class="btn small danger" id="delete-player-detail">🗑️ Desactivar</button></div>
     <div class="player-head">
       <div class="avatar big">${initials(p.nombre,p.apellido)}</div>
       <div><h3 class="card-title">${esc(p.nombre)} ${esc(p.apellido)}</h3><p class="muted">${esc(p.deporte||'')} · ${esc(p.categoria||'')} · ${esc(p.equipo||'')} · ${esc(p.posicion||'')}</p></div>
@@ -37,6 +62,7 @@ async function renderPlayerDetail(jugador_id, token){
       <button class="btn" id="save-player-btn">Guardar datos</button>
   </div>
   <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
+ const delBtn=$('#delete-player-detail'); if(delBtn) delBtn.onclick=()=>deletePlayerByCoach(jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim());
  setupDateMask('#ep-fecha'); setupDecimalComma('#ep-altura');
  const saveBtn=$('#save-player-btn');
  if(saveBtn) saveBtn.onclick=async()=>{try{

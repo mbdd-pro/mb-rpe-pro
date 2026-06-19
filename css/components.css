@@ -211,3 +211,36 @@ input, textarea, select {
   .graph-modal{padding:8px}
   .graph-modal-card{border-radius:18px;padding:12px}
 }
+
+
+/* v1.1.2 Jugadores borrar */
+.player-row .item-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.player-row .player-open{cursor:pointer}
+
+
+/* v1.1.3 no desborde gráficos */
+.card,.item,.kpi{min-width:0}
+.card{overflow:hidden}
+.card-head{min-width:0;flex-wrap:wrap}
+.card-head .card-title{margin-bottom:0}
+.chart-box{position:relative;width:100%;min-width:0;max-width:100%;overflow:hidden}
+.chart-box canvas{display:block;width:100%!important;max-width:100%!important;height:100%!important}
+.rank-bars{min-width:0;width:100%}
+.rank-row{min-width:0;width:100%}
+.rank-track{min-width:0;width:100%}
+.item-title,.item-sub{overflow:hidden;text-overflow:ellipsis}
+.team-heatmap-wrap{display:block;width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;contain:inline-size}
+.team-heatmap{width:max-content;min-width:0!important;max-width:none!important;grid-auto-columns:minmax(22px,26px)}
+.graph-modal{overflow:hidden}
+.graph-modal .team-heatmap-wrap{max-width:100%;overflow-x:auto}
+.graph-modal .team-heatmap{width:max-content;min-width:0!important}
+@media(max-width:420px){
+  .card{padding:14px}
+  .team-heatmap{gap:4px}
+  .heat-player{max-width:92px;font-size:9.5px}
+  .heat-cell{min-width:22px;min-height:24px;padding:2px;border-radius:8px}
+  .heat-head{font-size:9px}
+  .rank-label{font-size:12px}
+  .rank-row{grid-template-columns:minmax(0,1fr) 58px}
+  .rank-value{font-size:10px}
+}
