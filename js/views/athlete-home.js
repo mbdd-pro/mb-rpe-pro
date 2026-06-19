@@ -13,17 +13,18 @@ Router.register('athlete', async (params={}, token) => {
       <div class="kpi"><div class="val">${Number(data.avg_rpe||0).toFixed(1)}</div><div class="lbl">RPE prom.</div></div>
     </div>
     <div class="grid2"><button class="btn" id="free-session-btn">Cargar sesión libre</button><button class="btn secondary" onclick="syncNow()">Sincronizar</button></div>
-    <div class="card"><h3 class="card-title">💤 Bienestar de hoy</h3>${wellnessCard(wellness)}</div>
-    <div class="card"><h3 class="card-title">📝 Sesiones pendientes</h3>
+    <div class="card pending-first"><h3 class="card-title">📝 Sesiones pendientes</h3>
       ${pending.length ? `<div class="list">${pending.map(s=>sessionCard(s)).join('')}</div>` : `<div class="empty">No tenés sesiones pendientes. Cuando el coach cree una sesión abierta, te va a aparecer acá para cargar el RPE.</div>`}
     </div>
+    <div class="card"><h3 class="card-title">💤 Bienestar de hoy</h3>${wellnessCard(wellness)}</div>
     <div class="card"><h3 class="card-title">📌 Últimos reportes</h3>
       ${recent.length ? `<div class="list">${recent.map(r=>reportCard(r)).join('')}</div>` : `<div class="empty">Sin reportes todavía.</div>`}
     </div>`;
   setPageContent(content);
   const freeBtn = $('#free-session-btn'); if(freeBtn) freeBtn.onclick=()=>renderFreeSessionForm();
   setupWellnessButtons(wellness);
-  $$('.open-report').forEach(btn=>btn.onclick=()=>renderReportForm(btn.dataset.id, pending.find(s=>s.sesion_id===btn.dataset.id)));
+  $$('.open-report-card').forEach(card=>card.onclick=()=>renderReportForm(card.dataset.id, pending.find(s=>s.sesion_id===card.dataset.id)));
+  $$('.open-report').forEach(btn=>btn.onclick=(ev)=>{ev.stopPropagation(); renderReportForm(btn.dataset.id, pending.find(s=>s.sesion_id===btn.dataset.id));});
   $$('.ath-report-open').forEach(el=>el.onclick=()=>renderAthleteReportDetail(recent.find(r=>r.reporte_id===el.dataset.id)));
   $$('.ath-report-delete').forEach(btn=>btn.onclick=async(ev)=>{ ev.stopPropagation(); await deleteAthleteReport(btn.dataset.id, btn.dataset.free==='1'); });
 });
@@ -101,7 +102,13 @@ function setupWellnessButtons(wellness){
 function sessionCard(s){
   const creator = s.creada_por_nombre || s.coach_nombre || '';
   const meta = [dateAR(s.fecha), timeShort(s.hora_inicio), esc(s.tipo_sesion), `${s.duracion_min} min`, sourceLabel(s.estado), creator ? `Coach: <span class="coach-name">${esc(creator)}</span>` : ''].filter(Boolean).join(' · ');
-  return `<div class="item pending-session-card"><div class="item-main"><div class="item-title">${esc(s.titulo)}</div><div class="item-sub">${meta}</div></div><button class="btn small open-report pending-pulse" data-id="${esc(s.sesion_id)}">Pendiente · cargar RPE</button></div>`
+  return `<div class="item pending-session-card open-report-card" data-id="${esc(s.sesion_id)}">
+    <div class="item-main">
+      <div class="item-title">${esc(s.titulo)}</div>
+      <div class="item-sub">${meta}</div>
+      <button class="btn open-report pending-pulse pending-rpe-btn" data-id="${esc(s.sesion_id)}">Cargar RPE</button>
+    </div>
+  </div>`;
 }
 function isFreeReport(r){ return String(r.estado||'').includes('libre') || String(r.origen||'').toLowerCase()==='libre'; }
 function reportCard(r){
