@@ -4,7 +4,7 @@ Router.register('coach', async(params={}, token)=>{
   const [d, wellness] = await Promise.all([Api.coachDashboard(), Api.teamWellnessOverview().catch(()=>({players:[]}))]);
   if(Router.isStale(token)) return;
   setPageContent(`
-    <div class="grid3"><div class="kpi"><div class="val">${fmt(d.today_reports)}</div><div class="lbl">Reportes hoy</div></div><div class="kpi"><div class="val">${fmt(d.today_ua)}</div><div class="lbl">UA hoy</div></div><div class="kpi"><div class="val">${fmt(d.pending_today)}</div><div class="lbl">Pendientes</div></div></div>
+    <div class="coach-kpi-row"><div class="kpi compact"><div class="val">${fmt(d.today_reports)}</div><div class="lbl">Reportes hoy</div></div><div class="kpi compact"><div class="val">${fmt(d.today_ua)}</div><div class="lbl">UA hoy</div></div><div class="kpi compact"><div class="val">${fmt(d.pending_today)}</div><div class="lbl">Pendientes</div></div></div>
     <div class="grid2"><button class="btn" onclick="Router.go('coach-sessions')">Crear / ver sesiones</button><button class="btn secondary" onclick="syncNow()">Sincronizar</button></div>
     <div class="card"><h3 class="card-title">💤 Bienestar del plantel</h3><div class="list">${renderCoachWellness(wellness)}</div></div>
     <div class="desktop-cols">
