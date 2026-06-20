@@ -1,4 +1,4 @@
-Router.register('coach-compare', async(params={}, token)=>{
+Router.register('coach-compare', async()=>{
  if(!Auth.isLogged()||!Auth.isCoach()) return Router.go('login');
  $('#app').innerHTML=basePage('coach-compare','Comparación 1 vs 1','Analizá dos jugadores',`<div class="empty">Cargando jugadores...</div>`);
  const p=await Api.listPlayers();
