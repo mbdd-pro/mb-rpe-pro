@@ -313,3 +313,5 @@ input, textarea, select {
   .coach-kpi-row .kpi.compact .val{font-size:24px}
   .coach-kpi-row .kpi.compact .lbl{font-size:9px}
 }
+
+/* v1.3.1 Gráficos KPI compact: usa .coach-kpi-row existente */
