@@ -316,6 +316,6 @@ input, textarea, select {
 
 /* v1.3.1 Gráficos KPI compact: usa .coach-kpi-row existente */
 
-/* v1.3.3 clickable details */
+/* v1.3.4 clickable details robust */
 .clickable{cursor:pointer}
 .clickable:active{transform:scale(.995)}
