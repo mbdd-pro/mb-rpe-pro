@@ -1,7 +1,6 @@
 
 function renderVersionChip() { /* versión visible solo en login/pantallas internas */ }
 function syncNow(){
-  Api.invalidate();
   toast('Sincronizando...');
   Router.render();
 }

@@ -21,18 +21,23 @@ const Api = {
     try{ localStorage.setItem(this._storageKey(key), JSON.stringify({t:Date.now(), data})); }catch(e){}
   },
   invalidate(prefix=''){
+    const hit = (key)=>{
+      if(!prefix) return true;
+      return key.startsWith(prefix+'::') || key.includes('::'+prefix+'::') || key.endsWith('::'+prefix);
+    };
     if(!prefix){
       this._cache.clear();
       try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith('mb_rpe_api_cache__')) localStorage.removeItem(k); }); }catch(e){}
       return;
     }
-    [...this._cache.keys()].forEach(k=>{ if(k.startsWith(prefix+'::') || k.startsWith(prefix)) this._cache.delete(k); });
+    [...this._cache.keys()].forEach(k=>{ if(hit(k)) this._cache.delete(k); });
     try{
       Object.keys(localStorage).forEach(k=>{
-        if(k.startsWith('mb_rpe_api_cache__' + prefix + '::') || k.startsWith('mb_rpe_api_cache__' + prefix)) localStorage.removeItem(k);
+        if(k.startsWith('mb_rpe_api_cache__') && hit(k.replace('mb_rpe_api_cache__',''))) localStorage.removeItem(k);
       });
     }catch(e){}
   },
+  invalidateMany(actions=[]){ (actions||[]).forEach(a=>this.invalidate(a)); },
   async cached(action, params={}, ttl=86400000){
     const key=this._key(action, params);
     const now=Date.now();
@@ -86,14 +91,14 @@ const Api = {
   login(usuario, password, device_id){ return this.request('login',{usuario,password,device_id}); },
   guestLogin(nombre, apellido, device_id){ return this.request('guestLogin',{nombre,apellido,device_id}); },
   async register(data){ const r=await this.request('register', data); this.invalidate(); return r; },
-  async createSession(data){ const r=await this.request('createSession', data); this.invalidate(); return r; },
+  async createSession(data){ const r=await this.request('createSession', data); this.invalidateMany(['listSessions','sessionDetail','athleteHome','coachDashboard','teamLoadOverview','playerDetail']); return r; },
   listSessions(){ return this.cached('listSessions', {}, 86400000); },
   sessionDetail(sesion_id){ return this.cached('sessionDetail',{sesion_id}, 86400000); },
   athleteHome(jugador_id){ return this.cached('athleteHome',{jugador_id}, 86400000); },
-  async submitReport(data){ const r=await this.request('submitReport', data); this.invalidate(); return r; },
-  async submitFreeReport(data){ const r=await this.request('submitFreeReport', data); this.invalidate(); return r; },
+  async submitReport(data){ const r=await this.request('submitReport', data); this.invalidateMany(['athleteHome','athleteStats','athleteLoadMetrics','coachDashboard','teamLoadOverview','listSessions','sessionDetail','playerDetail']); return r; },
+  async submitFreeReport(data){ const r=await this.request('submitFreeReport', data); this.invalidateMany(['athleteHome','athleteStats','athleteLoadMetrics','coachDashboard','teamLoadOverview','listSessions','sessionDetail','playerDetail']); return r; },
   athleteWellness(jugador_id){ return this.cached('athleteWellness',{jugador_id}, 300000); },
-  async submitWellness(data){ const r=await this.request('submitWellness', data); this.invalidate(); return r; },
+  async submitWellness(data){ const r=await this.request('submitWellness', data); this.invalidateMany(['athleteWellness','teamWellnessOverview','playerDetail']); return r; },
   athleteStats(jugador_id){ return this.cached('athleteStats',{jugador_id}, 86400000); },
   athleteLoadMetrics(jugador_id){ return this.cached('athleteLoadMetrics',{jugador_id}, 86400000); },
   coachDashboard(){ return this.cached('coachDashboard', {}, 86400000); },
@@ -102,12 +107,12 @@ const Api = {
   listPlayers(){ return this.cached('listPlayers', {}, 86400000); },
   comparePlayers(a,b){ return this.cached('comparePlayers',{jugador_a:a,jugador_b:b}, 86400000); },
   playerDetail(jugador_id){ return this.cached('playerDetail',{jugador_id}, 86400000); },
-  async updatePlayer(data){ const r=await this.request('updatePlayer', data); this.invalidate(); return r; },
-  async deletePlayer(jugador_id){ const r=await this.request('deletePlayer', {jugador_id}); this.invalidate(); return r; },
+  async updatePlayer(data){ const r=await this.request('updatePlayer', data); this.invalidateMany(['listPlayers','playerDetail','coachDashboard','teamLoadOverview','teamWellnessOverview','listSessions','sessionDetail']); return r; },
+  async deletePlayer(jugador_id){ const r=await this.request('deletePlayer', {jugador_id}); this.invalidateMany(['listPlayers','playerDetail','coachDashboard','teamLoadOverview','teamWellnessOverview','listSessions','sessionDetail','comparePlayers']); return r; },
   async updateProfile(data){ const r=await this.request('updateProfile', data); this.invalidate(); return r; },
   async changePassword(data){ const r=await this.request('changePassword', data); this.invalidate(); return r; },
-  async closeSession(sesion_id){ const r=await this.request('closeSession',{sesion_id}); this.invalidate(); return r; },
-  async deleteSession(sesion_id){ const r=await this.request('deleteSession',{sesion_id}); this.invalidate(); return r; },
-  async deleteReport(reporte_id){ const r=await this.request('deleteReport',{reporte_id}); this.invalidate(); return r; },
-  async coachSubmitReport(data){ const r=await this.request('coachSubmitReport', data); this.invalidate(); return r; }
+  async closeSession(sesion_id){ const r=await this.request('closeSession',{sesion_id}); this.invalidateMany(['listSessions','sessionDetail','coachDashboard','teamLoadOverview','athleteHome','playerDetail']); return r; },
+  async deleteSession(sesion_id){ const r=await this.request('deleteSession',{sesion_id}); this.invalidateMany(['listSessions','sessionDetail','coachDashboard','teamLoadOverview','athleteHome','playerDetail']); return r; },
+  async deleteReport(reporte_id){ const r=await this.request('deleteReport',{reporte_id}); this.invalidateMany(['athleteHome','athleteStats','athleteLoadMetrics','coachDashboard','teamLoadOverview','listSessions','sessionDetail','playerDetail']); return r; },
+  async coachSubmitReport(data){ const r=await this.request('coachSubmitReport', data); this.invalidateMany(['coachDashboard','teamLoadOverview','listSessions','sessionDetail','playerDetail','athleteHome','athleteStats','athleteLoadMetrics']); return r; }
 };
