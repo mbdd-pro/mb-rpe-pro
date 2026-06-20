@@ -300,3 +300,16 @@ input, textarea, select {
 
 /* v1.2.9 Coach carga faltantes */
 .coach-fill-missing,.player-fill-session{white-space:nowrap}
+
+
+/* v1.2.10 Coach KPI compact */
+.coach-kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.coach-kpi-row .kpi.compact{min-height:82px;padding:14px 12px}
+.coach-kpi-row .kpi.compact .val{font-size:28px;line-height:1}
+.coach-kpi-row .kpi.compact .lbl{font-size:10px;white-space:nowrap}
+@media(max-width:380px){
+  .coach-kpi-row{gap:6px}
+  .coach-kpi-row .kpi.compact{padding:12px 8px;min-height:76px}
+  .coach-kpi-row .kpi.compact .val{font-size:24px}
+  .coach-kpi-row .kpi.compact .lbl{font-size:9px}
+}
