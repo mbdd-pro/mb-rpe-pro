@@ -9,7 +9,7 @@ Router.register('coach', async(params={}, token)=>{
     <div class="card"><h3 class="card-title">💤 Bienestar del plantel</h3><div class="list">${renderCoachWellness(wellness)}</div></div>
     <div class="desktop-cols">
       <div class="card"><h3 class="card-title">🚨 Alertas</h3><div class="list">${(d.alerts||[]).map(a=>`<div class="item"><div class="item-main"><div class="item-title">${esc(a.nombre)}</div><div class="item-sub">${esc(a.detalle)}${a.origen ? ' · '+esc(a.origen) : ''}</div></div><span class="pill danger">Revisar</span></div>`).join('') || '<div class="empty">Sin alertas fuertes.</div>'}</div></div>
-      <div class="card"><h3 class="card-title">🏆 Ranking semanal</h3><div class="list">${(d.ranking||[]).map((p,i)=>`<div class="item"><div class="avatar">${i+1}</div><div class="item-main"><div class="item-title">${esc(p.nombre)} ${esc(p.apellido)}</div><div class="item-sub">${fmt(p.ua)} UA · RPE prom. ${Number(p.avg_rpe||0).toFixed(1)}</div></div></div>`).join('') || '<div class="empty">Sin datos.</div>'}</div></div>
+      <div class="card"><h3 class="card-title">🏆 Ranking semanal</h3><div class="list">${(d.ranking||[]).map((p,i)=>`<div class="item clickable" onclick="Router.go('coach-players',{id:'${esc(p.jugador_id)}'})"><div class="avatar">${i+1}</div><div class="item-main"><div class="item-title">${esc(p.nombre)} ${esc(p.apellido)}</div><div class="item-sub">${fmt(p.ua)} UA · RPE prom. ${Number(p.avg_rpe||0).toFixed(1)}</div></div></div>`).join('') || '<div class="empty">Sin datos.</div>'}</div></div>
     </div>`);
   setupCoachWellnessClicks(wellness);
 });

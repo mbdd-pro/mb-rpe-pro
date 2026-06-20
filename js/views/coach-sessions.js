@@ -144,6 +144,29 @@ function coachSessionCard(s){
 }
 
 
+
+function renderCoachSessionReportDetail(s, r){
+  if(!r) return toast('Reporte no encontrado');
+  const playerName = `${r.nombre||''} ${r.apellido||''}`.trim() || r.jugador_id || '-';
+  $('#page-content').innerHTML = `<div class="card">
+    <button class="btn small secondary" onclick="Router.go('coach-sessions',{id:'${esc(s.sesion_id)}'})">← Volver</button>
+    <h3 class="card-title">${esc(playerName)} · RPE ${esc(r.rpe)}</h3>
+    <div class="session-detail-grid">
+      <div class="item"><div class="item-main"><div class="item-title">Sesión</div><div class="item-sub">${esc(s.titulo||r.titulo||'-')}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Fecha y hora</div><div class="item-sub">${dateAR(r.fecha||s.fecha)} ${timeShort(r.hora_inicio||s.hora_inicio)||''}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Jugador</div><div class="item-sub">${esc(playerName)}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Tipo / origen</div><div class="item-sub">${esc(r.tipo_sesion||s.tipo_sesion||'-')} · ${sourceLabel(r.estado||r.origen)}</div></div><span class="pill ${String(r.estado||r.origen||'').includes('libre')?'warn':'ok'}">${sourceLabel(r.estado||r.origen)}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Duración</div><div class="item-sub">${esc(r.duracion_min||s.duracion_min||'-')} min</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">RPE / UA</div><div class="item-sub">RPE ${esc(r.rpe)} · ${fmt(r.ua)} UA</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Comentario</div><div class="item-sub">${esc(r.comentario||'-')}</div></div></div>
+    </div>
+    <button class="btn danger" id="delete-report-detail" style="margin-top:12px">🗑️ Borrar reporte</button>
+  </div>`;
+  const del=$('#delete-report-detail');
+  if(del) del.onclick=async()=>{ await deleteReportByCoach(r.reporte_id); };
+}
+
+
 function missingPlayerItem(s,p){
   const name = `${p.nombre||''} ${p.apellido||''}`.trim() || p.jugador_id;
   return `<div class="item"><div class="item-main"><div class="item-title">${esc(name)}</div><div class="item-sub">${esc(p.equipo||'')} · ${esc(p.categoria||'')} · ${esc(p.posicion||'')}</div></div><button class="btn small coach-fill-missing" data-player="${esc(p.jugador_id)}" data-name="${esc(name)}">Cargar por jugador</button></div>`;
@@ -198,11 +221,14 @@ async function renderSessionDetail(id, token){
     </div>
   </div>
   <div class="card"><h3 class="card-title">Reportes de la sesión</h3>
-    ${reports.length ? `<div class="list">${reports.map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.nombre)} ${esc(r.apellido)} · RPE ${esc(r.rpe)}</div><div class="item-sub">${fmt(r.ua)} UA · ${esc(r.comentario||'-')}</div></div><div class="item-actions"><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span><button class="btn small danger delete-btn report-delete" data-id="${esc(r.reporte_id)}" title="Borrar reporte">🗑️</button></div></div>`).join('')}</div>` : '<div class="empty">Sin reportes.</div>'}
+    ${reports.length ? `<div class="list">${reports.map((r,i)=>`<div class="item clickable" onclick="window.openCoachSessionReportDetail(${i})"><div class="item-main"><div class="item-title">${esc(r.nombre)} ${esc(r.apellido)} · RPE ${esc(r.rpe)}</div><div class="item-sub">${fmt(r.ua)} UA · ${esc(r.comentario||'-')}</div></div><div class="item-actions"><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span><button class="btn small danger delete-btn report-delete" data-id="${esc(r.reporte_id)}" onclick="event.stopPropagation()" title="Borrar reporte">🗑️</button></div></div>`).join('')}</div>` : '<div class="empty">Sin reportes.</div>'}
   </div>
   <div class="card"><h3 class="card-title">Faltan completar</h3>
     ${missing.length ? `<div class="list">${missing.map(p=>missingPlayerItem(s,p)).join('')}</div>` : '<div class="empty">Todos los jugadores activos ya completaron esta sesión.</div>'}
   </div>`);
+  window.__coachSessionDetail = s;
+  window.__coachSessionReports = reports;
+  window.openCoachSessionReportDetail = function(i){ renderCoachSessionReportDetail(window.__coachSessionDetail, (window.__coachSessionReports||[])[Number(i)]); };
   const del=$('#delete-session-detail'); if(del) del.onclick=()=>deleteSessionByCoach(s.sesion_id, s.titulo);
   $$('.report-delete').forEach(btn=>btn.onclick=async(ev)=>{ev.stopPropagation(); await deleteReportByCoach(btn.dataset.id);});
   $$('.coach-fill-missing').forEach(btn=>btn.onclick=()=>renderCoachFillReportForm(s, btn.dataset.player, btn.dataset.name, 'coach-sessions', {id:s.sesion_id}));

@@ -36,6 +36,25 @@ async function deletePlayerByCoach(id, name){
 
 
 
+
+function renderCoachPlayerReportDetail(r, p){
+  if(!r) return toast('Reporte no encontrado');
+  const playerName = `${p.nombre||''} ${p.apellido||''}`.trim() || r.jugador_id || '-';
+  $('#page-content').innerHTML = `<div class="card">
+    <button class="btn small secondary" onclick="Router.go('coach-players',{id:'${esc(p.jugador_id)}'})">← Volver</button>
+    <h3 class="card-title">${esc(r.titulo)} · RPE ${esc(r.rpe)}</h3>
+    <div class="session-detail-grid">
+      <div class="item"><div class="item-main"><div class="item-title">Fecha y hora</div><div class="item-sub">${dateAR(r.fecha)} ${timeShort(r.hora_inicio)||''}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Jugador</div><div class="item-sub">${esc(playerName)}</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">Tipo / origen</div><div class="item-sub">${esc(r.tipo_sesion||'-')} · ${sourceLabel(r.estado||r.origen)}</div></div><span class="pill ${String(r.estado||r.origen||'').includes('libre')?'warn':'ok'}">${sourceLabel(r.estado||r.origen)}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Duración</div><div class="item-sub">${esc(r.duracion_min||'-')} min</div></div></div>
+      <div class="item"><div class="item-main"><div class="item-title">RPE / UA</div><div class="item-sub">RPE ${esc(r.rpe)} · ${fmt(r.ua)} UA</div></div><span class="pill ${loadZone(r.ua).cls}">${loadZone(r.ua).label}</span></div>
+      <div class="item"><div class="item-main"><div class="item-title">Comentario</div><div class="item-sub">${esc(r.comentario||'-')}</div></div></div>
+    </div>
+  </div>`;
+}
+
+
 function renderPlayerPendingSessions(rows, jugador_id, playerName){
   rows = rows || [];
   if(!rows.length) return '<div class="empty">Sin sesiones pendientes.</div>';
@@ -111,8 +130,11 @@ async function renderPlayerDetail(jugador_id, token){
     <div class="chart-box"><canvas id="player-wellness-chart"></canvas></div>
     <div class="list wellness-history-list">${renderPlayerWellnessList(d.wellness||[])}</div>
   </div>
-  <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map(r=>`<div class="item"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
+  <div class="card"><h3 class="card-title">Últimos reportes</h3><div class="list">${(d.reports||[]).map((r,i)=>`<div class="item clickable" onclick="window.openCoachPlayerReportDetail(${i})"><div class="item-main"><div class="item-title">${esc(r.titulo)} · RPE ${r.rpe}</div><div class="item-sub">${dateAR(r.fecha)} · ${fmt(r.ua)} UA · ${sourceLabel(r.estado)}</div></div><span class="pill ${String(r.estado||'').includes('libre')?'warn':loadZone(r.ua).cls}">${String(r.estado||'').includes('libre')?'Libre':loadZone(r.ua).label}</span></div>`).join('') || '<div class="empty">Sin reportes.</div>'}</div></div>`);
  const wSeries=(d.wellness||[]).slice().reverse(); Charts.line('player-wellness-chart', wSeries.map(x=>dateAR(x.fecha).slice(0,5)), wSeries.map(x=>Number(x.score||0)), 'Bienestar');
+ window.__coachPlayerReports = d.reports || [];
+ window.__coachPlayerData = p;
+ window.openCoachPlayerReportDetail = function(i){ renderCoachPlayerReportDetail((window.__coachPlayerReports||[])[Number(i)], window.__coachPlayerData); };
  $$('.player-fill-session').forEach(btn=>btn.onclick=()=>renderPlayerPendingFillForm({sesion_id:btn.dataset.session,titulo:btn.dataset.title,fecha:btn.dataset.fecha,hora_inicio:btn.dataset.hora,duracion_min:btn.dataset.duracion,tipo_sesion:btn.dataset.tipo}, jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim()));
  const delBtn=$('#delete-player-detail'); if(delBtn) delBtn.onclick=()=>deletePlayerByCoach(jugador_id, `${p.nombre||''} ${p.apellido||''}`.trim());
  setupDateMask('#ep-fecha'); setupDecimalComma('#ep-altura');
