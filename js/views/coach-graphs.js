@@ -15,10 +15,10 @@ Router.register('coach-graphs', async(params={}, token)=>{
   }).slice(0,8);
 
   setPageContent(`
-    <div class="grid3">
-      <div class="kpi"><div class="val">${fmt(d.week_ua)}</div><div class="lbl">UA equipo 7d</div></div>
-      <div class="kpi"><div class="val">${fmt(d.today_ua)}</div><div class="lbl">UA hoy</div></div>
-      <div class="kpi"><div class="val">${fmt(players.length)}</div><div class="lbl">Jugadores</div></div>
+    <div class="coach-kpi-row">
+      <div class="kpi compact"><div class="val">${fmt(d.week_ua)}</div><div class="lbl">UA equipo 7d</div></div>
+      <div class="kpi compact"><div class="val">${fmt(d.today_ua)}</div><div class="lbl">UA hoy</div></div>
+      <div class="kpi compact"><div class="val">${fmt(players.length)}</div><div class="lbl">Jugadores</div></div>
     </div>
 
     <div class="card">
