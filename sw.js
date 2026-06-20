@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mb-rpe-pro-v1-3-3-clickable-details';
+const CACHE_NAME = 'mb-rpe-pro-v1-3-4-click-details-robust';
 
 // App shell: NO incluimos js/config.js para que los cambios de API_URL/version no queden clavados.
 const APP_SHELL = [
@@ -38,7 +38,7 @@ self.addEventListener('fetch', event => {
   // config.js siempre network-first/no-store. Si cambia API_URL o VERSION, Chrome no debe servir una copia vieja.
   if (url.pathname.endsWith('/js/config.js')) {
     event.respondWith(
-      fetch(req, { cache: 'no-store' }).catch(() => new Response("window.APP_CONFIG={APP_NAME:'MB RPE Pro',API_URL:'https://mb-rpe-pro-api.archivosmatiburrieza.workers.dev/',VERSION:'1.3.3',DEFAULT_THEME:'black',BRAND_BY:'By Pancko'};", {
+      fetch(req, { cache: 'no-store' }).catch(() => new Response("window.APP_CONFIG={APP_NAME:'MB RPE Pro',API_URL:'https://mb-rpe-pro-api.archivosmatiburrieza.workers.dev/',VERSION:'1.3.4',DEFAULT_THEME:'black',BRAND_BY:'By Pancko'};", {
         headers: { 'Content-Type': 'application/javascript; charset=utf-8' }
       }))
     );
