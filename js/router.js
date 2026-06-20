@@ -2,8 +2,13 @@
 const Router = {
   routes:{},
   rendering:0,
+  isStale(token){ return token && token !== this.rendering; },
   register(name, fn){ this.routes[name]=fn; },
-  go(name, params={}){ location.hash = name + (Object.keys(params).length ? '?' + new URLSearchParams(params).toString() : ''); },
+  go(name, params={}){
+    const next = name + (Object.keys(params).length ? '?' + new URLSearchParams(params).toString() : '');
+    if(location.hash === '#' + next) return this.render();
+    location.hash = next;
+  },
   current(){ const raw=location.hash.replace('#','') || 'auto'; const [name, qs=''] = raw.split('?'); return {name, params:Object.fromEntries(new URLSearchParams(qs))}; },
   async render(){
     const token=++this.rendering;
@@ -12,6 +17,7 @@ const Router = {
     const view=this.routes[name] || this.routes.login;
     try { await view(params, token); }
     catch(e){
+      if(token !== this.rendering) return;
       console.error(e);
       toast(e.message || 'Error');
       const pc=$('#page-content');
